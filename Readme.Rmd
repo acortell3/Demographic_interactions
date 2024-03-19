@@ -24,6 +24,8 @@ Please note that for the tactical simulation, the different exploratory analyses
 
 The folder `Data` contains three subfolders: `Sim_selected_500`, `Simulated` and `Observed`. The first one contains only the best 500 fits for the simulated data and the second one the information for the simulated SPDs. As for the folder `Observed`, it contains the `.csv` with the dates of each dataset and three more subfolders (`Denmark`, `Iberia` and `Japan`) each of which contains the SPDs and another subfolder with the best 500 fits. If the structure of this directory is not changed, all scripts should work without the need to reroute paths. 
 
+Additionally, the full output of the results has been uploaded to Zenodo for accountabiliity (doi: 10.5281/zenodo.10837744) although, as mentioned before, it is not necessary to reproduce the code (it's actually the results that the code produces!).
+
 ### Figures
 
 Contains the figures used in the paper. These can be generated again using the script `04.Plots.R`.

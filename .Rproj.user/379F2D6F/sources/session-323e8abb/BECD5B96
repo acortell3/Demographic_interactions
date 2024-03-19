@@ -1,0 +1,26 @@
+{
+    "id": "BECD5B96",
+    "path": "/media/alfredo/1TB/Storage/INVESTIGACIO/PUBLICACIONS/En_proces/2023/LV/To_send/Demographic_interactions/Scripts/03.2_ABC_Observed.R",
+    "project_path": "Scripts/03.2_ABC_Observed.R",
+    "type": "r_source",
+    "hash": "2512536126",
+    "contents": "",
+    "dirty": false,
+    "created": 1710840298293.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "42,0",
+        "scrollLine": "32"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710841986,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710841986434,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,173 @@
+
+## Load data for posterior check
+dataset <- c("Tactical_10_dates","Tactical_25_dates","Tactical_50_dates","Tactical_100_dates",
+             "Tactical_200_dates","Tactical_400_dates","Serpis","H_Ebro","L_Ebro","L_Ebro_Cast",
+             "East_Iberia")
+
+dataset <- c("Tactical_10_dates","Tactical_25_dates","Tactical_50_dates","Tactical_100_dates",
+             "Tactical_200_dates","Tactical_400_dates")
+
+order <- c(1:length(dataset))
+time <- c(600,800,1000)
+
+par(mfrow = c(2,3))
+
+for (k in 1:length(dataset)){
+  theta <- readRDS(paste0("Results/Simulated/",time[1],"_years/",dataset[order[k]],"/theta_",dataset[order[k]],"_",time[1],"_years_5_fit.rds"))
+  theta_i_fit <- readRDS(paste0("Results/Simulated/",time[1],"_years/",dataset[order[k]],"/theta_i_fit_",dataset[order[k]],"_",time[1],"_years_5_fit.rds"))
+  Neo_spd <- readRDS(paste0("Data/Simulated/",time[1],"_years/",dataset[order[k]],"_f_",time[1],"_years.rds"))
+  Meso_spd <- readRDS(paste0("Data/Simulated/",time[1],"_years/",dataset[order[k]],"_hg_",time[1],"_years.rds"))
+  
+  ## The name of the object with the fit and distances is 'theta_i_fit'
+  eps <- rep(NA,length(theta_i_fit))
+  for (i in 1:length(theta_i_fit)){
+    eps[i] <- theta_i_fit[[i]][[1]]
+  }
+
+  plot(Neo_spd$grid$PrDens, type = "l", col = "darkred", lwd = 1.5,
+       main = paste0(dataset[order[k]]))
+  lines(Meso_spd$grid$PrDens, col = "darkblue", lwd = 1.5)
+  
+  for (i in 1:500){
+    lines(theta_i_fit[[i]][[2]]$grid$PrDens, col = "lightblue")
+    lines(theta_i_fit[[i]][[3]]$grid$PrDens, col = "pink")
+  }
+  
+  lines(Neo_spd$grid$PrDens, col = "darkred", lwd = 1.5)
+  lines(Meso_spd$grid$PrDens, col = "darkblue", lwd = 1.5)
+  
+  
+}
+
+theta <- readRDS(paste0("Results/Simulated/",time[1],"_years/",dataset[order[k]],"/theta_",dataset[order[k]],"_",time[1],"_years_5_fit.rds"))
+theta_i_fit <- readRDS(paste0("Results/Simulated/",time[1],"_years/",dataset[order[k]],"/theta_i_fit_",dataset[order[k]],"_",time[1],"_years_5_fit.rds"))
+Neo_spd <- readRDS(paste0("Data/Simulated/",time[1],"_years/",dataset[order[k]],"_f_",time[1],"_years.rds"))
+Meso_spd <- readRDS(paste0("Data/Simulated/",time[1],"_years/",dataset[order[k]],"_hg_",time[1],"_years.rds"))
+
+## The name of the object with the fit and distances is 'theta_i_fit'
+eps <- rep(NA,length(theta_i_fit))
+for (i in 1:length(theta_i_fit)){
+  eps[i] <- theta_i_fit[[i]][[1]]
+}
+
+quantile(eps,prob=seq(0,1,1/100))
+## POSTERIOR CHECK
+#par=mfrow(c(1,1))
+## Full particle
+
+par(mfrow = c(1,1))
+plot(Neo_spd$grid$PrDens, type = "l", col = "darkred", lwd = 1.5,
+     main = paste0(dataset[dat_ind]))
+lines(Meso_spd$grid$PrDens, col = "darkblue", lwd = 1.5)
+
+for (i in 1:500){
+  lines(theta_i_fit[[i]][[2]]$grid$PrDens, col = "lightblue")
+  lines(theta_i_fit[[i]][[3]]$grid$PrDens, col = "pink")
+}
+
+lines(Neo_spd$grid$PrDens, col = "darkred", lwd = 1.5)
+lines(Meso_spd$grid$PrDens, col = "darkblue", lwd = 1.5)
+
+distances <- rep(0,500)
+for (i in 1:500){
+  distances[i] <- dist(rbind(theta_i_fit[[i]][[2]]$grid$PrDens,Meso_spd$grid$PrDens)) + dist(rbind(theta_i_fit[[i]][[3]]$grid$PrDens,Neo_spd$grid$PrDens))
+}
+min(distances)
+summary(distances)
+distances[order(distances)][1:20]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+par(mfrow = c(2,5))
+for (i in 1:500){
+  plot(Neo_spd$grid$PrDens, type = "l", col = "darkred", lwd = 1.5, ylim = c(0,0.1),
+       main = "Posterior check full particle")
+  lines(Meso_spd$grid$PrDens, col = "darkblue", lwd = 1.5)
+  
+  
+  lines(theta_i_fit[[i]][[2]]$grid$PrDens, col = "lightblue")
+  lines(theta_i_fit[[i]][[3]]$grid$PrDens, col = "pink")
+}
+
+
+
+par(mfrow = c(3,3))
+for (i in 1:9){
+  plot(Serp_f_spd_sel$grid$PrDens, type = "l", col = "darkred", lwd = 1.5, ylim = c(0,0.1),
+       main = "Posterior check full particle")
+  lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+  lines(theta_i_fit[[ind[i]]][[2]]$grid$PrDens, col = "lightblue")
+  lines(theta_i_fit[[ind[i]]][[3]]$grid$PrDens, col = "pink")
+  
+}
+
+
+## Select best 10
+
+#acc_d_theta_rej <- d_theta_rej[rank(d_theta_rej)<=100]
+
+names(eps) <- seq(1:length(eps))
+new <- eps[rank(eps)>=491]
+sel_pars <- as.numeric(names(new))
+
+theta_best_10_fit <- theta_i_fit[sel_pars]
+
+par(mfrow = c(3,3))
+
+for (i in 1:9){
+  plot(Serp_f_spd_sel$grid$PrDens, type = "l", col = "darkred", lwd = 1.5, ylim = c(0,0.1),
+                    main = "Posterior check best 10")
+  lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+  lines(theta_best_10_fit[[i]][[2]]$grid$PrDens, col = "lightblue")
+  lines(theta_best_10_fit[[i]][[3]]$grid$PrDens, col = "pink")
+  lines(Serp_f_spd_sel$grid$PrDens, col = "darkred", lwd = 1.5)
+  lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+  
+}
+
+par(mfrow = c(1,1))
+plot(Serp_f_spd_sel$grid$PrDens, type = "l", col = "darkred", lwd = 1.5, ylim = c(0,0.1),
+     main = "Posterior check best 10")
+lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+
+
+for (i in 3:3){
+  lines(theta_best_10_fit[[i]][[2]]$grid$PrDens, col = "lightblue")
+  lines(theta_best_10_fit[[i]][[3]]$grid$PrDens, col = "pink")
+}
+
+lines(Serp_f_spd_sel$grid$PrDens, col = "darkred", lwd = 1.5)
+lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+max(Serp_f_spd_sel$grid$PrDens)/max(Serp_hg_spd_sel$grid$PrDens)
+for(i in 1:30){
+  print(max(theta_best_10_fit[[i]][[3]]$grid$PrDens)/max(theta_best_10_fit[[i]][[2]]$grid$PrDens))
+}
+
+try_hg <- theta_best_10_fit[[9]][[2]]$grid$PrDens/max(theta_best_10_fit[[9]][[3]]$grid$PrDens)*max(Serp_f_spd_sel$grid$PrDens)
+try_f <- theta_best_10_fit[[9]][[3]]$grid$PrDens/max(theta_best_10_fit[[9]][[3]]$grid$PrDens)*max(Serp_f_spd_sel$grid$PrDens)
+plot(Serp_f_spd_sel$grid$PrDens, type = "l", col = "darkred", lwd = 1.5, ylim = c(0,0.1),
+     main = "Posterior check best 10")
+lines(Serp_hg_spd_sel$grid$PrDens, col = "darkblue", lwd = 1.5)
+lines(try_f, col = "pink", lwd = 1.5)
+lines(try_hg, col = "lightblue", lwd = 1.5)
+
+plot(theta_best_10_fit[[9]][[2]])
+
+
+

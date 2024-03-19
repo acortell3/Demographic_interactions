@@ -1,0 +1,30 @@
+
+Ib <- read.csv("Data/Observed/Iberia_coords.csv")
+Ib <- unique(Ib)
+colnames(Ib) <- c("Site","Latitude","Longitude")
+
+
+Ib$Latitude <- round(as.numeric(sub(pattern = ",", replacement = ".", x = Ib$Latitude)),2)
+Ib$Longitude <- round(as.numeric(sub(pattern = ",", replacement = ".", x = Ib$Longitude)),2)
+Ib <- Ib[-8,]
+Ib$Status <- c("F","F","HG","F","HG","HG","F","F","F","F","F","F","F","F","F","HG-F","F","F","F","F","F","F","F","F","F")
+
+
+which(Ib$Site == "Valmayor XI")
+Ib$Site
+sites_hg
+sites_f
+
+Ib
+
+new_sites <- data.frame("Site" = c("Coves del Fem", "Font d'Horta", "Can Roqueta II", "Caserna de Sant Pau",
+                                   "Cova dels Calderons","Cova Freda de Montserrat", "Coves del Fem", "Novelda CU"),
+                        "Latitude" = c(41.32,41.26,41.54,41.39,38.37,41.57,41.32,38.39),
+                        "Longitude" = c(0.85,1.63,2.13,2.11,-0.9,1.83,0.84,-0.77),
+                        "Status" = c("HG","HG","F","F","F","F","F","F"))
+
+Ib <- rbind(Ib,new_sites)
+write.csv(Ib,"./Data/Observed/Iberia_coords.csv")
+
+
+citation("colorRamps")

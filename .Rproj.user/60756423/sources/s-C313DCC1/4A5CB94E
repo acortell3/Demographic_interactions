@@ -1,0 +1,26 @@
+{
+    "id": "4A5CB94E",
+    "path": "~/Desktop/RProjects/Population_dynamics/Scripts/03.2_ABC_Observed.R",
+    "project_path": "Scripts/03.2_ABC_Observed.R",
+    "type": "r_source",
+    "hash": "3532887434",
+    "contents": "",
+    "dirty": false,
+    "created": 1701854935707.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "40,48",
+        "scrollLine": "27"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710771951,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710771952028,
+    "read_only": false,
+    "read_only_alternatives": []
+}

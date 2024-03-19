@@ -1,0 +1,26 @@
+{
+    "id": "3945CF19",
+    "path": "~/Desktop/RProjects/Population_dynamics/Scripts/01_Functions.R",
+    "project_path": "Scripts/01_Functions.R",
+    "type": "r_source",
+    "hash": "1789197692",
+    "contents": "",
+    "dirty": false,
+    "created": 1701854733803.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "67,15",
+        "scrollLine": "49"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710771470,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710771470473,
+    "read_only": false,
+    "read_only_alternatives": []
+}

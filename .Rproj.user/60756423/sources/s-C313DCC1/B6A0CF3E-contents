@@ -1,0 +1,56 @@
+
+## Initial Parameters
+M <- 60 ##hg population
+N <- 6 ## f population
+Kn_mult <- 1.5 ## Set Carrying capacity ratio N/M
+Km <- M
+Kn <- M*Kn_mult
+ndates <- 400 ## Number of dates for this simulation
+time <- c(600,800,1000) ## length of the period. To explore the sensibility of the starting pont.
+## The interaction process can last 1000 years (complete process), 800 years 
+## (drop first 200 years) and 600 years (drop first 400 years)
+
+
+
+possible_pars <- c("Dm" = runif(1, max = 0.04, min = 0),# 0.003
+                   "Gm" = runif(1, max = 0.022, min = 0.001), #0.0015,#
+                   "Dn" = runif(1, max = 0.04, min = 0),#0.008,#
+                   "e" = runif(1, max = 0.3, min = 0), #0.62,#  ## Changed it to max 0.5 (it was 1) so it doesn't take all meso pop
+                   "Gn" = runif(1, max = 0.035, min = 0.015), # 0.02,#
+                   "Km" = Km,
+                   "Kn" = Kn,
+                   "m" = runif(1, max = 0.035, min = 0)) #0.25)# ## As much as the vegetative growth
+## per generation. I could show the computations in the article.
+
+
+## Proposition 1 in sup mat 2: Correction for discarding unrealistic parameterisations
+## Establish values of lambda1 and lambda2
+Li <- possible_pars["Gm"]-(possible_pars["Dm"]*possible_pars["Kn"])
+Lii <- (possible_pars["Gn"]+possible_pars["m"])-((possible_pars["Dn"]-(possible_pars["e"]*possible_pars["Dm"]))*possible_pars["Km"])
+
+## Select parameterisation only if not unrealistic
+#if ((Li < 0 & Lii > 0) | (Li < 0 & Lii < 0)){
+if (Li < 0 & Lii > 0){
+  Prior_sim_s_pars <- possible_pars
+  state <- c(M = M, N = N)
+  
+  ## Store values
+  pars <- list("Dm" = Prior_sim_s_pars[1],
+               "Gm" = Prior_sim_s_pars[2],
+               "Dn" = Prior_sim_s_pars[3],
+               "Gn" = Prior_sim_s_pars[5],
+               "e" = Prior_sim_s_pars[4],
+               "Km" = Prior_sim_s_pars[6],
+               "Kn" = Prior_sim_s_pars[7],
+               "m" = Prior_sim_s_pars[8])
+  
+  out <- data.frame(LotVolme(pars, times = c(1:time[1])))
+}
+
+
+par(mfrow = c(1,1))
+plot(out[,2], type = "l", col = "black", ylim = c(0,max(out[,3])))
+lines(out[,3], col = "red")
+
+saveRDS(pars,"./Data/pars_lilower0_lihigher0.rds")
+

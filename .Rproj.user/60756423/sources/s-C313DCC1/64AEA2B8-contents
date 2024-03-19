@@ -1,0 +1,1023 @@
+
+
+################################################################################
+################################################################################
+
+####### Code for: Article title
+#######
+
+#### Author: Alfredo Cortell-Nicolau.
+
+#### License: Permission is granted to use and adapt this code. Please 
+#### acknowledge authorship when appropriate.
+
+#### This code allows full reproducibility of the article "The spread of agriculture
+#### in Iberia through Approximate Bayesian Computation and Neolithic Projectile
+#### Tools", by A. Cortell-Nicolau, O. García-Puchol, D. García-Rivero and 
+#### M. Barrera-Cruz
+
+#### The code is divided in three fundamental sections: 
+
+####          (1) Data gathering and analysis
+####          (2) Model and ABC-SMC
+####          (3) Plots
+
+#### This script corresponds to SECTION 1. In this section, data is collected
+#### and explored, the analysis on cultural data is performed (including
+#### some analyses not shown in the main text) and, finally, a cultural distance
+#### matrix is obtained. 
+#### This cultural distance matrix will be used in the other two scripts.
+#### However, it is also provided as a Rdata file, so that the other scripts
+#### can be run separately
+
+#### This script also contains the Moran's I test for spatial autocorrelation
+
+#### the GeomeasuRe package can currently be accessed via 'devtools' at
+#### https://github.com/acortell3/GeomeasuRe
+
+#### Computationally expensive objects can be obtained either through this code
+#### or by retrieving the data provided in the SI.
+
+################################################################################
+################################################################################
+
+
+
+################################################################################
+#######              SECTION 1: DATA GATHERING AND ANALYSIS              #######
+################################################################################
+
+### 1.1 LOADING DATA AND LIBRARIES
+
+## 1.1.1 Load libraries and data
+library(GeomeasuRe)
+Fac <- read.csv("Geos.csv")[,-1]
+Fac <- Fac[order(Fac$ID),]
+
+## 1.1.2 Load geo shapes
+# Load first geometric to construct multipolygon
+Geos_i <- readG(dsn=paste("Geos/",Fac$ID[1],"/Sp",sep=""),
+                layer=paste("i.",Fac$ID[1],sep = ""), "i")
+Geos_s <- readG(dsn=paste("Geos/",Fac$ID[1],"/Sp",sep=""),
+                layer=paste("s.",Fac$ID[1],sep = ""), "s")
+Geos_r <- readG(dsn=paste("Geos/",Fac$ID[1],"/Sp",sep=""),
+                layer=paste("r.",Fac$ID[1],sep = ""), "r")
+
+for (i in 2:nrow(Fac)){
+  
+  ID <- Fac$ID[i]
+  
+  ## Establish route and layer
+  route<-paste("Geos/",ID,"/Sp",sep="")
+  idipol<-paste("i.",ID,sep = "")
+  idrpol<-paste("r.",ID,sep="")
+  idspol<-paste("s.",ID,sep="")
+  
+  
+  i.pol<-readG(dsn=route,layer=idipol, "i")
+  s.pol<-readG(dsn=route,layer=idspol, "s")
+  r.pol<-readG(dsn=route,layer=idrpol, "r")
+  
+  Geos_i <- raster::bind(Geos_i,i.pol)
+  Geos_s <- raster::bind(Geos_s,s.pol)
+  Geos_r <- raster::bind(Geos_r,r.pol)
+}
+
+### 1.2 COLLECTING VARIABLES (via GEOMEASURE)
+
+## 1.2.1 Non-scalated measures
+Non_scl <- matrix(ncol = 6, nrow = nrow(Fac))
+
+## Take measures of reliability, length, width, proximal angle, distal angle and area
+colnames(Non_scl) <- c("Rel","Length","Width","P_Ang","D_Ang","Area")
+
+for (i in 1:nrow(Fac)){
+  Rel <- Reliab(Geos_i[i,],Geos_s[i,])
+  Length <- G_Length(Geos_i[i,])
+  Width <- G_Width(Geos_i[i,])
+  Angles <- i_ang(Geos_i[i,])
+  if (length(Angles) == 4){
+    Angles <- Angles[c(1,4)]
+  } else if (length(Angles) == 3){
+    Angles <- Angles[c(1,3)]
+  }
+  Area <- Geos_r[i,]@polygons[[1]]@area
+  
+  Non_scl[i,] <- c(Rel,Length,Width,Angles,Area)
+  
+}
+
+## 1.2.2 L-lines
+
+#L-Lines
+L_lin <- matrix(ncol = 114, nrow=nrow(Fac))
+L_hlin <- matrix(ncol = 228,nrow = nrow(Fac))
+R_lin <- matrix(ncol = 228,nrow = nrow(Fac))
+
+for (i in 1:nrow(Fac)){
+  
+  # For same orienation pols
+  oripol <- Comb_orient(Geos_i[i,],Geos_s[i,],Geos_r[i,],"Left")
+  
+  pol <- scl(centr(oripol[3,]))
+  poli <- scl(centr(oripol[1,]))
+  pols <- scl(centr(oripol[2,]))
+  
+  #Compute
+  lins <- unlist(L_lines(pol))
+  hlins <- unlist(L_hlines(pol))
+  rlins <- unlist(L_rel(poli,pols))
+  
+  #Assign to df
+  L_hlin[i,] <- hlins
+  L_lin[i,] <- lins
+  R_lin[i,] <- as.character(rlins)
+}
+
+
+## Scalated by side
+L_hlin <- matrix(ncol = 228,nrow = nrow(Fac))
+
+for (i in 1:nrow(Fac)){
+  L_hlin[i,] <- c(L_hlines(centr(s_scl(Geos_r[i,],4,"x")))$Wi_W_measures,
+                  L_hlines(centr(s_scl(Geos_r[i,],4,"x")))$Wi_E_measures,
+                  L_hlines(centr(s_scl(Geos_r[i,],4,"y")))$L_dist_measures,
+                  L_hlines(centr(s_scl(Geos_r[i,],4,"y")))$L_prox_measures)
+}
+
+## Set names
+colnames(L_lin) <- c(names(L_lines(Geos_r[1,])$W_measures),names(L_lines(Geos_r[1,])$L_measures))
+colnames(L_hlin) <- c(names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$Wi_W_measures),
+                      names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$Wi_E_measures),
+                      names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$L_dist_measures),
+                      names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$L_prox_measures))
+
+colnames(R_lin) <- c(names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$Wi_W_measures),
+                     names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$Wi_E_measures),
+                     names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$L_dist_measures),
+                     names(L_hlines(centr(s_scl(Geos_r[1,], fac = 5)))$L_prox_measures))
+
+## Select from R_lin which are not reliable (== n) and convert them to NA in L_hlin
+L_hlin[R_lin == "n"] <- NA
+
+## Merge all data in one single data.frame (only use reliable hlin)
+Df <- cbind(Fac,Non_scl,L_hlin)
+
+## Remove all observations where rel < 95
+Df <- Df[Df$Rel >= 95,] 
+
+## Remove NAs
+for (j in 1:nrow(Df)){
+  if (Df$Rel[j] != 100){
+    for (i in 15:ncol(Df)){
+      Df[,i][is.na(Df[,i])] <- mean(Df[,i],na.rm=TRUE)
+    }
+  }
+}
+
+## Change to all 0s columns with less than 10 observations
+
+## This function turns the column to 0
+rem0 <- function(x){
+  y <- x[x>0]
+  
+  if (length(y) >= 30){ 
+    x <- x
+  } else {
+    x <- rep(0,nrow(Df))
+  }
+  return(x)
+}
+
+# Execute
+Ls <- as.data.frame(apply(Df[,15:ncol(Df)],2,rem0))
+
+# Remove columns with 0 values
+for (i in (ncol(Ls):1)){
+  if (sum(Ls[,i])<0.1){
+    Ls[,i] <- NULL
+  }
+}
+
+## Final Df
+Df_fin <- cbind(Df[,c(1,2,5:13)],Ls[,-c(1:4)])      
+
+### 1.3 DATA EXPLORATION
+
+## 1.3.1 PCA
+
+## In case section 1.2 has not been performed
+## Df_fin <- read.csv("Accepted_variables.csv")[,-1] 
+
+Df_num <- Df_fin[,c(1,2,12:ncol(Df_fin))] ## Only L lines and area
+
+## Load libraries
+library(cluster)
+library(NbClust)
+library(dendextend)
+library(ggdendro)
+library(dplyr)
+library(ggplot2)
+
+#### PCA
+
+## Select only ID,Site and numeric variables
+Df_num <- Df_fin[,c(1,2,12:ncol(Df_fin))] ## Only L lines and area
+
+## Compute Mahalanobis distance on numeric variables to check for group outliers.
+x <- Df_num[,c(3:ncol(Df_num))] # Select numeric
+ma <- mahalanobis(x,apply(x,2,mean), cov(x)) # Compute mahalanobis distance
+k <- ncol(x) # Number of variables
+L <- k + 3 * sqrt(k*2) ## Mahalanobis distance limit
+plot(ma,pch = 20, ylim = c(0,max(ma,L)), main = "Mahalanobis distance", ylab = "dist")
+text(ma,rownames(x), pos = 2)
+abline(h=L, col = "Red")
+
+## Compute sd to see if using correlation or variance-covariance matrix
+Sd <- apply(Df_num[,3:ncol(Df_num)],2,sd)
+Sd ## Use correlation matrix
+
+## Do PCA
+PCA1 <- princomp(Df_num[3:ncol(Df_num)],cor = TRUE,scores = TRUE)
+summary(PCA1)
+
+## Do scree plot
+## All components
+pro_var_all <- (PCA1$sdev^2)/ncol(PCA1$loadings)*100
+
+comps_all <- c() ## Names
+for (i in 1:ncol(PCA1$loadings)){
+  comps_c <- paste0("C",i)
+  comps_all <- append(comps_all, comps_c)
+}
+
+pro_var_df_all <- data.frame("pro_var" = pro_var_all, "comps" = comps_all)
+
+## Selected 20 components
+pro_var_df_sel <- data.frame("pro_var" = pro_var_all[1:20], "comps" = comps_all[1:20])
+par(mfrow = c(2,1))
+
+barplot(height = pro_var_df_all$pro_var, names.arg = pro_var_df_all$comps,
+        ylab = "Variance proportion",xlab = "Components", cex.names = 0.7,
+        main = "All components")
+
+barplot(height = pro_var_df_sel$pro_var, names.arg = pro_var_df_sel$comps,
+        ylab = "Variance proportion",xlab = "Components", cex.names = 0.7,
+        main = "20 components")
+
+## Use 15 components, which justify 90% of variance
+
+### 1.3.2 Cluster analysis
+Df_comp <- cbind(Df_num[,1:2],PCA1$scores[,1:15]) 
+
+        #### ---- JUST FOR PREVIOUS ANALYSES. NOT IN THE TEXT ---- ####
+
+### Hierarchical clustering
+rownames(Df_comp) <- Df_comp[,1]
+Df_comp <- Df_comp[,-1]
+
+## Compute distance matrix, including factors
+Retouch <- Df_fin[,c(4,5,7,8)] ## For scale divided by side
+
+Df_fac <- cbind(Df_comp,Retouch)
+#write.csv(Df_fac,"Variables_after_PCA.csv")
+
+Df_fac$Site <- as.factor(Df_fac$Site)
+Df_fac$IncP <- as.factor(Df_fac$IncP)
+Df_fac$IncD <- as.factor(Df_fac$IncD)
+Df_fac$DirP <- as.factor(Df_fac$DirP)
+Df_fac$DirD <- as.factor(Df_fac$DirD)
+
+mat_dist_f <- daisy(Df_fac[,2:ncol(Df_fac)],metric = "gower")
+
+## Hierarchical cluster with four different methods
+clust_w2 <- hclust(mat_dist_f,method = "ward.D2")
+clust_av <- hclust(mat_dist_f,method = "average")
+clust_co <- hclust(mat_dist_f,method = "complete")
+clust_si <- hclust(mat_dist_f,method = "single")
+
+## Plot them
+par(mfrow = c(2,2))
+plot(clust_w2,main = "Ward D2")
+plot(clust_av,main = "Average")
+plot(clust_co,main = "Complete")
+plot(clust_si,main = "Single")
+
+## Measure cophenetic distances
+cor(mat_dist_f,cophenetic(clust_w2))
+cor(mat_dist_f,cophenetic(clust_av))
+cor(mat_dist_f,cophenetic(clust_co))
+cor(mat_dist_f,cophenetic(clust_si))
+
+## Plotting dendrogram with colors per class (choose method Average, with best 
+## cophenetic distance)
+par(mfrow = c(1,1))
+
+## Create labels
+Df_comp$Zone <- c(rep("Val",37),rep("And",2), rep("Ret",54),rep("Ara",29),rep("Cat",4),
+                  rep("Ara",5),rep("Cat",1),rep("And",12),rep("Val",2))
+
+Df_fac$Zone <- c(rep("Val",37),rep("And",2), rep("Ret",54),rep("Ara",29),rep("Cat",4),
+                 rep("Ara",5),rep("Cat",1),rep("And",12),rep("Val",2))
+
+fam1 <- data.frame(rownames(Df_fac),Df_comp$Zone)
+fam2 <- data.frame(rownames(Df_fac),Df_comp$Site)
+
+colnames(fam1) <- c("label","family")
+colnames(fam2) <- c("label","family")
+
+## Create dendro_data for plotting
+Dendo <- as.dendrogram(clust_av)
+Dendata <- dendro_data(Dendo)
+
+## Create labels
+labs <- label(Dendata)
+labs1 <- inner_join(labs,fam1,by = "label")
+labs2 <- inner_join(labs,fam2,by = "label")
+
+
+## And now plot
+
+# By zone
+p <- ggplot() + 
+  geom_segment(data = segment(Dendata), aes(x=x, y=y, xend=xend, yend=yend)) + coord_flip()+scale_y_reverse() +
+  geom_segment(data = segment(Dendata) %>%
+                 filter(yend==0)%>%
+                 left_join(Dendata$labels, by = "x"), aes(x=x,y=y.x,xend=xend,yend=yend,colour = labs1$family)) +
+  scale_colour_manual(values = c("red","blue","green4","orange","magenta"))
+p <- p + geom_text(data=labs,
+                   aes(label=label,x=x,y=-0.02,colour=labs1$family), size = 1.2) 
+
+# By site
+s <- ggplot() + 
+  geom_segment(data = segment(Dendata),aes(x=x, y=y, xend=xend, yend=yend)) + coord_flip()+scale_y_reverse() +
+  geom_segment(data = segment(Dendata) %>%
+                 filter(yend==0)%>%
+                 left_join(Dendata$labels, by = "x"), aes(x=x,y=y.x,xend=xend,yend=yend,colour = labs2$family)) +
+  scale_colour_manual(values = c("red","blue","green4","orange","indianred4","purple",
+                                 "yellow","darkgreen","lightseagreen","pink","darkred",
+                                 "magenta","green"))
+s <- s + geom_text(data=labs,
+                   aes(label=label,x=x,y=-0.02,colour=labs2$family), size = 1.2)
+
+                    #### ---- BACK TO THE TEXT ---- ####
+
+
+### 1.4 GROUP BY SITES. FINAL SET OF VARIABLES FOR DISTANCE MATRIX
+
+## Create categories from numeric, based on 20% cuantiles
+
+## Function for categorising
+categ <- function(x){
+  minv <- x-min(x)
+  x <- round(minv/max(minv),1)*10
+}
+
+## Convert components values to categories (from 1 to 10)
+cat_fac <- Df_fac
+cat_fac_c <- apply(Df_fac[,2:16],2,categ)
+cat_fac[,2:16] <- cat_fac_c
+
+## Or
+Or <- subset(cat_fac,cat_fac$Site == "Cova Or")
+
+Or_counts <- rep(0,15*5)
+names(Or_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                      "C2_1","C2_2","C2_3","C2_4","C2_5",
+                      "C3_1","C3_2","C3_3","C3_4","C3_5",
+                      "C4_1","C4_2","C4_3","C4_4","C4_5",
+                      "C5_1","C5_2","C5_3","C5_4","C5_5",
+                      "C6_1","C6_2","C6_3","C6_4","C6_5",
+                      "C7_1","C7_2","C7_3","C7_4","C7_5",
+                      "C8_1","C8_2","C8_3","C8_4","C8_5",
+                      "C9_1","C9_2","C9_3","C9_4","C9_5",
+                      "C10_1","C10_2","C10_3","C10_4","C10_5",
+                      "C11_1","C11_2","C11_3","C11_4","C11_5",
+                      "C12_1","C12_2","C12_3","C12_4","C12_5",
+                      "C13_1","C13_2","C13_3","C13_4","C13_5",
+                      "C14_1","C14_2","C14_3","C14_4","C14_5",
+                      "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Or)){
+    if (Or[i,j] == 0 | Or[i,j] == 1 | Or[i,j] == 2){
+      Or_counts[d] <- Or_counts[d]+1
+    } else if (Or[i,j] == 3 | Or[i,j] == 4) {
+      Or_counts[d+1] <- Or_counts[d+1]+1
+    } else if (Or[i,j] == 5 | Or[i,j] == 6) {
+      Or_counts[d+2] <- Or_counts[d+2]+1
+    } else if (Or[i,j] == 7 | Or[i,j] == 8) {
+      Or_counts[d+3] <- Or_counts[d+3]+1
+    } else if (Or[i,j] == 9 | Or[i,j] == 10) {
+      Or_counts[d+4] <- Or_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Or_counts <- c(Or_counts,table(Or[,18]),table(Or[,19]),table(Or[,20]),table(Or[,21]))
+
+#C_San_counts <- c(C_San_counts,table(C_San[,18]),table(C_San[,19]),table(C_San[,20]),table(C_San[,21]))
+
+## Cova de les Cendres
+C_Cen <- subset(cat_fac,cat_fac$Site == "Cova de les Cendres")
+
+C_Cen_counts <- rep(0,15*5)
+names(C_Cen_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                         "C2_1","C2_2","C2_3","C2_4","C2_5",
+                         "C3_1","C3_2","C3_3","C3_4","C3_5",
+                         "C4_1","C4_2","C4_3","C4_4","C4_5",
+                         "C5_1","C5_2","C5_3","C5_4","C5_5",
+                         "C6_1","C6_2","C6_3","C6_4","C6_5",
+                         "C7_1","C7_2","C7_3","C7_4","C7_5",
+                         "C8_1","C8_2","C8_3","C8_4","C8_5",
+                         "C9_1","C9_2","C9_3","C9_4","C9_5",
+                         "C10_1","C10_2","C10_3","C10_4","C10_5",
+                         "C11_1","C11_2","C11_3","C11_4","C11_5",
+                         "C12_1","C12_2","C12_3","C12_4","C12_5",
+                         "C13_1","C13_2","C13_3","C13_4","C13_5",
+                         "C14_1","C14_2","C14_3","C14_4","C14_5",
+                         "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(C_Cen)){
+    if (C_Cen[i,j] == 0 | C_Cen[i,j] == 1 | C_Cen[i,j] == 2){
+      C_Cen_counts[d] <- C_Cen_counts[d]+1
+    } else if (C_Cen[i,j] == 3 | C_Cen[i,j] == 4) {
+      C_Cen_counts[d+1] <- C_Cen_counts[d+1]+1
+    } else if (C_Cen[i,j] == 5 | C_Cen[i,j] == 6) {
+      C_Cen_counts[d+2] <- C_Cen_counts[d+2]+1
+    } else if (C_Cen[i,j] == 7 | C_Cen[i,j] == 8) {
+      C_Cen_counts[d+3] <- C_Cen_counts[d+3]+1
+    } else if (C_Cen[i,j] == 9 | C_Cen[i,j] == 10) {
+      C_Cen_counts[d+4] <- C_Cen_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+C_Cen_counts <- c(C_Cen_counts,table(C_Cen[,18]),table(C_Cen[,19]),table(C_Cen[,20]),table(C_Cen[,21]))
+
+## Cueva de Chaves
+Chav <- subset(cat_fac,cat_fac$Site == "Cueva de Chaves")
+
+Chav_counts <- rep(0,15*5)
+names(Chav_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                        "C2_1","C2_2","C2_3","C2_4","C2_5",
+                        "C3_1","C3_2","C3_3","C3_4","C3_5",
+                        "C4_1","C4_2","C4_3","C4_4","C4_5",
+                        "C5_1","C5_2","C5_3","C5_4","C5_5",
+                        "C6_1","C6_2","C6_3","C6_4","C6_5",
+                        "C7_1","C7_2","C7_3","C7_4","C7_5",
+                        "C8_1","C8_2","C8_3","C8_4","C8_5",
+                        "C9_1","C9_2","C9_3","C9_4","C9_5",
+                        "C10_1","C10_2","C10_3","C10_4","C10_5",
+                        "C11_1","C11_2","C11_3","C11_4","C11_5",
+                        "C12_1","C12_2","C12_3","C12_4","C12_5",
+                        "C13_1","C13_2","C13_3","C13_4","C13_5",
+                        "C14_1","C14_2","C14_3","C14_4","C14_5",
+                        "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Chav)){
+    if (Chav[i,j] == 0 | Chav[i,j] == 1 | Chav[i,j] == 2){
+      Chav_counts[d] <- Chav_counts[d]+1
+    } else if (Chav[i,j] == 3 | Chav[i,j] == 4) {
+      Chav_counts[d+1] <- Chav_counts[d+1]+1
+    } else if (Chav[i,j] == 5 | Chav[i,j] == 6) {
+      Chav_counts[d+2] <- Chav_counts[d+2]+1
+    } else if (Chav[i,j] == 7 | Chav[i,j] == 8) {
+      Chav_counts[d+3] <- Chav_counts[d+3]+1
+    } else if (Chav[i,j] == 9 | Chav[i,j] == 10) {
+      Chav_counts[d+4] <- Chav_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Chav_counts <- c(Chav_counts,table(Chav[,18]),table(Chav[,19]),table(Chav[,20]),table(Chav[,21]))
+
+## Cueva del Toro
+C_Tor <- subset(cat_fac,cat_fac$Site == "Cueva del Toro")
+
+C_Tor_counts <- rep(0,15*5)
+names(C_Tor_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                         "C2_1","C2_2","C2_3","C2_4","C2_5",
+                         "C3_1","C3_2","C3_3","C3_4","C3_5",
+                         "C4_1","C4_2","C4_3","C4_4","C4_5",
+                         "C5_1","C5_2","C5_3","C5_4","C5_5",
+                         "C6_1","C6_2","C6_3","C6_4","C6_5",
+                         "C7_1","C7_2","C7_3","C7_4","C7_5",
+                         "C8_1","C8_2","C8_3","C8_4","C8_5",
+                         "C9_1","C9_2","C9_3","C9_4","C9_5",
+                         "C10_1","C10_2","C10_3","C10_4","C10_5",
+                         "C11_1","C11_2","C11_3","C11_4","C11_5",
+                         "C12_1","C12_2","C12_3","C12_4","C12_5",
+                         "C13_1","C13_2","C13_3","C13_4","C13_5",
+                         "C14_1","C14_2","C14_3","C14_4","C14_5",
+                         "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(C_Tor)){
+    if (C_Tor[i,j] == 0 | C_Tor[i,j] == 1 | C_Tor[i,j] == 2){
+      C_Tor_counts[d] <- C_Tor_counts[d]+1
+    } else if (C_Tor[i,j] == 3 | C_Tor[i,j] == 4) {
+      C_Tor_counts[d+1] <- C_Tor_counts[d+1]+1
+    } else if (C_Tor[i,j] == 5 | C_Tor[i,j] == 6) {
+      C_Tor_counts[d+2] <- C_Tor_counts[d+2]+1
+    } else if (C_Tor[i,j] == 7 | C_Tor[i,j] == 8) {
+      C_Tor_counts[d+3] <- C_Tor_counts[d+3]+1
+    } else if (C_Tor[i,j] == 9 | C_Tor[i,j] == 10) {
+      C_Tor_counts[d+4] <- C_Tor_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+C_Tor_counts <- c(C_Tor_counts,table(C_Tor[,18]),table(C_Tor[,19]),table(C_Tor[,20]),table(C_Tor[,21]))
+
+## El Retamar
+Ret <- subset(cat_fac,cat_fac$Site == "El Retamar")
+
+Ret_counts <- rep(0,15*5)
+names(Ret_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Ret)){
+    if (Ret[i,j] == 0 | Ret[i,j] == 1 | Ret[i,j] == 2){
+      Ret_counts[d] <- Ret_counts[d]+1
+    } else if (Ret[i,j] == 3 | Ret[i,j] == 4) {
+      Ret_counts[d+1] <- Ret_counts[d+1]+1
+    } else if (Ret[i,j] == 5 | Ret[i,j] == 6) {
+      Ret_counts[d+2] <- Ret_counts[d+2]+1
+    } else if (Ret[i,j] == 7 | Ret[i,j] == 8) {
+      Ret_counts[d+3] <- Ret_counts[d+3]+1
+    } else if (Ret[i,j] == 9 | Ret[i,j] == 10) {
+      Ret_counts[d+4] <- Ret_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Ret_counts <- c(Ret_counts,table(Ret[,18]),table(Ret[,19]),table(Ret[,20]),table(Ret[,21]))
+
+## Guixeres
+Gui <- subset(cat_fac,cat_fac$Site == "Guixeres")
+
+Gui_counts <- rep(0,15*5)
+names(Gui_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Gui)){
+    if (Gui[i,j] == 0 | Gui[i,j] == 1 | Gui[i,j] == 2){
+      Gui_counts[d] <- Gui_counts[d]+1
+    } else if (Gui[i,j] == 3 | Gui[i,j] == 4) {
+      Gui_counts[d+1] <- Gui_counts[d+1]+1
+    } else if (Gui[i,j] == 5 | Gui[i,j] == 6) {
+      Gui_counts[d+2] <- Gui_counts[d+2]+1
+    } else if (Gui[i,j] == 7 | Gui[i,j] == 8) {
+      Gui_counts[d+3] <- Gui_counts[d+3]+1
+    } else if (Gui[i,j] == 9 | Gui[i,j] == 10) {
+      Gui_counts[d+4] <- Gui_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Gui_counts <- c(Gui_counts,table(Gui[,18]),table(Gui[,19]),table(Gui[,20]),table(Gui[,21]))
+
+## Los Castillejos
+Cast <- subset(cat_fac,cat_fac$Site == "Los Castillejos")
+
+Cast_counts <- rep(0,15*5)
+names(Cast_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                        "C2_1","C2_2","C2_3","C2_4","C2_5",
+                        "C3_1","C3_2","C3_3","C3_4","C3_5",
+                        "C4_1","C4_2","C4_3","C4_4","C4_5",
+                        "C5_1","C5_2","C5_3","C5_4","C5_5",
+                        "C6_1","C6_2","C6_3","C6_4","C6_5",
+                        "C7_1","C7_2","C7_3","C7_4","C7_5",
+                        "C8_1","C8_2","C8_3","C8_4","C8_5",
+                        "C9_1","C9_2","C9_3","C9_4","C9_5",
+                        "C10_1","C10_2","C10_3","C10_4","C10_5",
+                        "C11_1","C11_2","C11_3","C11_4","C11_5",
+                        "C12_1","C12_2","C12_3","C12_4","C12_5",
+                        "C13_1","C13_2","C13_3","C13_4","C13_5",
+                        "C14_1","C14_2","C14_3","C14_4","C14_5",
+                        "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Cast)){
+    if (Cast[i,j] == 0 | Cast[i,j] == 1 | Cast[i,j] == 2){
+      Cast_counts[d] <- Cast_counts[d]+1
+    } else if (Cast[i,j] == 3 | Cast[i,j] == 4) {
+      Cast_counts[d+1] <- Cast_counts[d+1]+1
+    } else if (Cast[i,j] == 5 | Cast[i,j] == 6) {
+      Cast_counts[d+2] <- Cast_counts[d+2]+1
+    } else if (Cast[i,j] == 7 | Cast[i,j] == 8) {
+      Cast_counts[d+3] <- Cast_counts[d+3]+1
+    } else if (Cast[i,j] == 9 | Cast[i,j] == 10) {
+      Cast_counts[d+4] <- Cast_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Cast_counts <- c(Cast_counts,table(Cast[,18]),table(Cast[,19]),table(Cast[,20]),table(Cast[,21]))
+
+## Nerja
+Nerj <- subset(cat_fac,cat_fac$Site == "Nerja")
+
+Nerj_counts <- rep(0,15*5)
+names(Nerj_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                        "C2_1","C2_2","C2_3","C2_4","C2_5",
+                        "C3_1","C3_2","C3_3","C3_4","C3_5",
+                        "C4_1","C4_2","C4_3","C4_4","C4_5",
+                        "C5_1","C5_2","C5_3","C5_4","C5_5",
+                        "C6_1","C6_2","C6_3","C6_4","C6_5",
+                        "C7_1","C7_2","C7_3","C7_4","C7_5",
+                        "C8_1","C8_2","C8_3","C8_4","C8_5",
+                        "C9_1","C9_2","C9_3","C9_4","C9_5",
+                        "C10_1","C10_2","C10_3","C10_4","C10_5",
+                        "C11_1","C11_2","C11_3","C11_4","C11_5",
+                        "C12_1","C12_2","C12_3","C12_4","C12_5",
+                        "C13_1","C13_2","C13_3","C13_4","C13_5",
+                        "C14_1","C14_2","C14_3","C14_4","C14_5",
+                        "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Nerj)){
+    if (Nerj[i,j] == 0 | Nerj[i,j] == 1 | Nerj[i,j] == 2){
+      Nerj_counts[d] <- Nerj_counts[d]+1
+    } else if (Nerj[i,j] == 3 | Nerj[i,j] == 4) {
+      Nerj_counts[d+1] <- Nerj_counts[d+1]+1
+    } else if (Nerj[i,j] == 5 | Nerj[i,j] == 6) {
+      Nerj_counts[d+2] <- Nerj_counts[d+2]+1
+    } else if (Nerj[i,j] == 7 | Nerj[i,j] == 8) {
+      Nerj_counts[d+3] <- Nerj_counts[d+3]+1
+    } else if (Nerj[i,j] == 9 | Nerj[i,j] == 10) {
+      Nerj_counts[d+4] <- Nerj_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Nerj_counts <- c(Nerj_counts,table(Nerj[,18]),table(Nerj[,19]),table(Nerj[,20]),table(Nerj[,21]))
+
+## Valmayor
+Valm <- subset(cat_fac,cat_fac$Site == "Valmayor")
+
+Valm_counts <- rep(0,15*5)
+names(Valm_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                        "C2_1","C2_2","C2_3","C2_4","C2_5",
+                        "C3_1","C3_2","C3_3","C3_4","C3_5",
+                        "C4_1","C4_2","C4_3","C4_4","C4_5",
+                        "C5_1","C5_2","C5_3","C5_4","C5_5",
+                        "C6_1","C6_2","C6_3","C6_4","C6_5",
+                        "C7_1","C7_2","C7_3","C7_4","C7_5",
+                        "C8_1","C8_2","C8_3","C8_4","C8_5",
+                        "C9_1","C9_2","C9_3","C9_4","C9_5",
+                        "C10_1","C10_2","C10_3","C10_4","C10_5",
+                        "C11_1","C11_2","C11_3","C11_4","C11_5",
+                        "C12_1","C12_2","C12_3","C12_4","C12_5",
+                        "C13_1","C13_2","C13_3","C13_4","C13_5",
+                        "C14_1","C14_2","C14_3","C14_4","C14_5",
+                        "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Valm)){
+    if (Valm[i,j] == 0 | Valm[i,j] == 1 | Valm[i,j] == 2){
+      Valm_counts[d] <- Valm_counts[d]+1
+    } else if (Valm[i,j] == 3 | Valm[i,j] == 4) {
+      Valm_counts[d+1] <- Valm_counts[d+1]+1
+    } else if (Valm[i,j] == 5 | Valm[i,j] == 6) {
+      Valm_counts[d+2] <- Valm_counts[d+2]+1
+    } else if (Valm[i,j] == 7 | Valm[i,j] == 8) {
+      Valm_counts[d+3] <- Valm_counts[d+3]+1
+    } else if (Valm[i,j] == 9 | Valm[i,j] == 10) {
+      Valm_counts[d+4] <- Valm_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Valm_counts <- c(Valm_counts,table(Valm[,18]),table(Valm[,19]),table(Valm[,20]),table(Valm[,21]))
+
+## Mas d'Is
+Mas <- subset(cat_fac,cat_fac$Site == "Mas d'Is")
+
+Mas_counts <- rep(0,15*5)
+names(Mas_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Mas)){
+    if (Mas[i,j] == 0 | Mas[i,j] == 1 | Mas[i,j] == 2){
+      Mas_counts[d] <- Mas_counts[d]+1
+    } else if (Mas[i,j] == 3 | Mas[i,j] == 4) {
+      Mas_counts[d+1] <- Mas_counts[d+1]+1
+    } else if (Mas[i,j] == 5 | Mas[i,j] == 6) {
+      Mas_counts[d+2] <- Mas_counts[d+2]+1
+    } else if (Mas[i,j] == 7 | Mas[i,j] == 8) {
+      Mas_counts[d+3] <- Mas_counts[d+3]+1
+    } else if (Mas[i,j] == 9 | Mas[i,j] == 10) {
+      Mas_counts[d+4] <- Mas_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Mas_counts <- c(Mas_counts,table(Mas[,18]),table(Mas[,19]),table(Mas[,20]),table(Mas[,21]))
+
+## Barranquet
+Bar <- subset(cat_fac,cat_fac$Site == "Barranquet")
+
+Bar_counts <- rep(0,15*5)
+names(Bar_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Bar)){
+    if (Bar[i,j] == 0 | Bar[i,j] == 1 | Bar[i,j] == 2){
+      Bar_counts[d] <- Bar_counts[d]+1
+    } else if (Bar[i,j] == 3 | Bar[i,j] == 4) {
+      Bar_counts[d+1] <- Bar_counts[d+1]+1
+    } else if (Bar[i,j] == 5 | Bar[i,j] == 6) {
+      Bar_counts[d+2] <- Bar_counts[d+2]+1
+    } else if (Bar[i,j] == 7 | Bar[i,j] == 8) {
+      Bar_counts[d+3] <- Bar_counts[d+3]+1
+    } else if (Bar[i,j] == 9 | Bar[i,j] == 10) {
+      Bar_counts[d+4] <- Bar_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Bar_counts <- c(Bar_counts,table(Bar[,18]),table(Bar[,19]),table(Bar[,20]),table(Bar[,21]))
+
+## Benàmer
+Ben <- subset(cat_fac,cat_fac$Site == "Benàmer")
+
+Ben_counts <- rep(0,15*5)
+names(Ben_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Ben)){
+    if (Ben[i,j] == 0 | Ben[i,j] == 1 | Ben[i,j] == 2){
+      Ben_counts[d] <- Ben_counts[d]+1
+    } else if (Ben[i,j] == 3 | Ben[i,j] == 4) {
+      Ben_counts[d+1] <- Ben_counts[d+1]+1
+    } else if (Ben[i,j] == 5 | Ben[i,j] == 6) {
+      Ben_counts[d+2] <- Ben_counts[d+2]+1
+    } else if (Ben[i,j] == 7 | Ben[i,j] == 8) {
+      Ben_counts[d+3] <- Ben_counts[d+3]+1
+    } else if (Ben[i,j] == 9 | Ben[i,j] == 10) {
+      Ben_counts[d+4] <- Ben_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Ben_counts <- c(Ben_counts,table(Ben[,18]),table(Ben[,19]),table(Ben[,20]),table(Ben[,21]))
+
+## Benàmer
+Fal <- subset(cat_fac,cat_fac$Site == "Abric de la Falguera")
+
+Fal_counts <- rep(0,15*5)
+names(Fal_counts) <- c("C1_1","C1_2","C1_3","C1_4","C1_5",
+                       "C2_1","C2_2","C2_3","C2_4","C2_5",
+                       "C3_1","C3_2","C3_3","C3_4","C3_5",
+                       "C4_1","C4_2","C4_3","C4_4","C4_5",
+                       "C5_1","C5_2","C5_3","C5_4","C5_5",
+                       "C6_1","C6_2","C6_3","C6_4","C6_5",
+                       "C7_1","C7_2","C7_3","C7_4","C7_5",
+                       "C8_1","C8_2","C8_3","C8_4","C8_5",
+                       "C9_1","C9_2","C9_3","C9_4","C9_5",
+                       "C10_1","C10_2","C10_3","C10_4","C10_5",
+                       "C11_1","C11_2","C11_3","C11_4","C11_5",
+                       "C12_1","C12_2","C12_3","C12_4","C12_5",
+                       "C13_1","C13_2","C13_3","C13_4","C13_5",
+                       "C14_1","C14_2","C14_3","C14_4","C14_5",
+                       "C15_1","C15_2","C15_3","C15_4","C15_5")
+
+d <- 1
+for (j in 2:16){
+  for (i in 1:nrow(Fal)){
+    if (Fal[i,j] == 0 | Fal[i,j] == 1 | Fal[i,j] == 2){
+      Fal_counts[d] <- Fal_counts[d]+1
+    } else if (Fal[i,j] == 3 | Fal[i,j] == 4) {
+      Fal_counts[d+1] <- Fal_counts[d+1]+1
+    } else if (Fal[i,j] == 5 | Fal[i,j] == 6) {
+      Fal_counts[d+2] <- Fal_counts[d+2]+1
+    } else if (Fal[i,j] == 7 | Fal[i,j] == 8) {
+      Fal_counts[d+3] <- Fal_counts[d+3]+1
+    } else if (Fal[i,j] == 9 | Fal[i,j] == 10) {
+      Fal_counts[d+4] <- Fal_counts[d+4]+1
+    }
+  }
+  d <- d+5
+}
+
+Fal_counts <- c(Fal_counts,table(Fal[,18]),table(Fal[,19]),table(Fal[,20]),table(Fal[,21]))
+
+
+
+Sites <- rbind(C_Cen_counts,Chav_counts,C_Tor_counts,Ret_counts,Gui_counts,
+               Cast_counts,Nerj_counts,Valm_counts,Mas_counts,Bar_counts,Ben_counts,
+               Or_counts,Fal_counts)
+
+rownames(Sites) <- c("Cova de les Cendres", "Cueva de Chaves", "Cueva del Toro", "Retamar",
+                     "Guixeres", "Los Castillejos", "Nerja", "Valmayor", "Mas d'Is", "Barranquet",
+                     "Benàmer", "Cova de l'Or", "Abric de la Falguera")
+
+for (i in ncol(Sites):1){
+  if (sum(Sites[,i]) < 1){
+    Sites <- Sites[,-i]
+  }
+}
+
+### Remove (from Sites) variables (columns) where more than half of the column is 0.
+## This is, remove every column with presence of 6 0s or more
+
+rem_0ss <- function(x){
+  v <- sum(x==0)
+  if (v > 5){
+    x <- rep(NA,length(x))
+  }
+  return(x)
+}
+
+
+morpho <- Sites[,c(1:75)]
+ret <- Sites[,c(76:ncol(Sites))]
+morpho <- apply(morpho,2,rem_0ss)
+morpho_red <- morpho[,colSums(is.na(morpho))!=nrow(morpho)]
+ret_red <- apply(ret,2,rem_0ss)
+ret_red <- ret_red[,colSums(is.na(ret_red))!=nrow(ret_red)]
+
+## With all retouch categories
+S_n <- rownames(Sites)
+Sites <- cbind(morpho_red,ret_red)
+rownames(Sites) <- S_n
+site_dist <- daisy(Sites,metric = "gower")
+
+## Take distance
+
+## Hierarchical cluster with four different methods
+clust_w2 <- hclust(site_dist,method = "ward.D2")
+clust_av <- hclust(site_dist,method = "average")
+clust_co <- hclust(site_dist,method = "complete")
+clust_si <- hclust(site_dist,method = "single")
+
+## Plot them
+par(mfrow = c(2,2))
+plot(clust_w2,main = "Ward D2")
+plot(clust_av,main = "Average")
+plot(clust_co,main = "Complete")
+plot(clust_si,main = "Single")
+
+## Measure cophenetic distances
+cor(site_dist,cophenetic(clust_w2))
+cor(site_dist,cophenetic(clust_av))
+cor(site_dist,cophenetic(clust_co))
+cor(site_dist,cophenetic(clust_si))
+
+par(mfrow=c(1,1))
+plot(clust_av,main = "Sites", xlab = "Sites", col = "darkred")
+
+### PRODUCES THE DISTANCE MATRIX WHICH WILL BE USED FOR THE CULTURAL SIMMILARITY MATRIX
+### WITHIN THE MANTEL TEXT
+
+#saveRDS(site_dist,"site_dist.rds")
+
+                #### ---- CHECK SPATIAL AUTOCORRELATION ---- ####
+
+library(raster)
+library(spdep)
+library(vegan)
+
+## Create data.frame to store Morans'I values
+moransi <- rbind(rep(NA,ncol(Sites)),rep(NA,ncol(Sites)),rep(NA,ncol(Sites)))
+colnames(moransi) <- colnames(Sites)
+rownames(moransi) <- c("Statistic","Observed","p-value")
+
+## Load and prepare geo data
+Sites_geo <- st_read("Sites_geo.shp")
+Sites_geo <- Sites_geo[-3,]
+Sites_geo$feature <- Sites[,ncol(Sites)]
+weights <- nb2listw(knn2nb(knearneigh(Sites_geo)))
+
+for (i in 1:ncol(Sites)){
+  Sites_geo$feature <- Sites[,i]
+  mi <- moran.mc(Sites_geo$feature, weights, nsim=10000)
+  
+  moransi[1,i] <- mi$statistic
+  moransi[2,i] <- mi$parameter
+  moransi[3,i] <- mi$p.value
+}
+
+moransi ## Not autocorrelated
+
+moransi_sm <- t(round(moransi,2))
+
+#write.csv(moransi_sm,"moransi.csv")
+
+## And plot it
+par(mfrow = c(3,6))
+
+for (i in 1:ncol(Sites)){
+  Sites_geo$feature <- Sites[,i]
+  tit <- paste0("SpC ",colnames(Sites)[i])
+  moran.plot(Sites_geo$feature,weights,xlim = c(-20,20),ylim = c(-20,20),main=tit,
+             xlab = "x", ylab = "y")
+}
+
+
+
+
+
+
+
+
+
+

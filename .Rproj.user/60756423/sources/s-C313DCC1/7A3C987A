@@ -1,0 +1,26 @@
+{
+    "id": "7A3C987A",
+    "path": "~/Desktop/RProjects/Population_dynamics/Scripts/02.1_Simulated_data.R",
+    "project_path": "Scripts/02.1_Simulated_data.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1701854752650.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "4,104",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1710771752,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1710771752703,
+    "read_only": false,
+    "read_only_alternatives": []
+}

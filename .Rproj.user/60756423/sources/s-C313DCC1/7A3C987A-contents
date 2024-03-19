@@ -1,0 +1,99 @@
+
+################################################################################
+################################################################################
+
+####### Code for: The interacting demographic dynamics of the last hunter-gatheers and the early farmers (2024):
+####### Cortell-Nicolau, A., Rivas, J., Crema, E. R., Shennan, S., García-Puchol, O., Kolar, J., Staniuk, R., 
+####### Timpson, A.
+
+#### Code by: Alfredo Cortell-Nicolau.
+
+#### License: Permission is granted to use and adapt this code. Please 
+#### acknowledge authorship when appropriate.
+
+################################################################################
+################                                                ################
+################                   SECTION 2                    ################
+################                                                ################
+################################################################################
+
+################################################################################
+################     OBSERVED DATA SIMULATED TARGETED PARS      ################
+################################################################################
+
+set.seed(123) ## For reproducibility
+
+#### 2.1 CREATE DEMOGRAPHIC DYNAMICS 
+
+## Prepare data
+
+## Initial Parameters
+M <- 60 ##hg population
+N <- 6 ## f population
+Kn_mult <- 1.5 ## Set Carrying capacity ratio N/M
+ndates <- 400 ## Number of dates for this simulation
+time <- c(600,800,1000) ## length of the period. To explore the sensibility of the starting poInt.
+## The interaction process can last 1000 years (complete process), 800 years 
+## (drop first 200 years) and 600 years (drop first 400 years)
+
+for (i in 1:3){
+  
+  state <- c(M = M, N = N)
+  
+  ## Parameters
+  # Parameters have been tuned to produce credible simulations
+  ## These parameters have been obtained from previous simulations
+  pars <- list("Dm" = 0.002,
+               "Gm" = 0.002,
+               "Dn" = 0.0015,
+               "Gn" = 0.025,
+               "e" = 0.2, ## For the short process, only change this parameter to 0.5 (hg to f)
+               "Km" = M,
+               "Kn" = M*Kn_mult,
+               "m" = 0.01)
+  
+  ## Population density
+  Pdens <- data.frame(LotVolme(pars, times = c(1:1001)))
+  Pdens <- Pdens[-c(1001-time[i]:1000),] ## Limits the beginning to try different starts
+  par(mfrow = c(1,1))
+  plot(Pdens[,2], type = "l", lwd = 1.5, col = "darkblue", ylim = c(0,95), 
+       main = paste0(1001-length(c(1001-time[i]:1000))," years"))
+  lines(Pdens[,3], lwd = 1.5, col = "darkred")
+  
+  ## Extract dates
+  Dates <- cult_afil(Pdens[,2],Pdens[,3],8500,8500-time[i]+1,ndates)
+  uncal_Dates <- uncalibrate(Dates[,1]) ## Uncalibrate
+  
+  ## Back-calibrate and produce SPD
+  Dates[,1] <- uncal_Dates$ccCRA
+  Dates$Sd <- sample(seq(20,100,20), nrow(Dates), prob = c(0.2,0.3,0.2,0.2,0.1), replace = TRUE)
+  
+  Obs <- calibrate(Dates$Year,Dates$Sd, calCurves = 'intcal20')
+  Obs_spd <- spd(Obs, timeRange = c(8500,8500-time[i]))
+  
+  Meso_sim_pop <- Dates$Year[Dates$Culture=="hg"] 
+  Meso <- calibrate(Meso_sim_pop,Dates$Sd[Dates$Culture=="hg"],calCurves = 'intcal20')
+  Meso_spd <- spd(Meso, timeRange = c(8500,8500-time[i]))
+  
+  Neo_sim_pop <- Dates$Year[Dates$Culture=="f"] 
+  Neo <- calibrate(Neo_sim_pop,Dates$Sd[Dates$Culture=="f"],calCurves = 'intcal20')
+  Neo_spd <- spd(Neo, timeRange = c(8500,8500-time[i]))
+  
+  ## Cal BC
+  plot(Obs_spd)
+  plot(Meso_spd,runm=1, add = TRUE, type = 'simple', col = 'darkblue', lwd = 1.5, lty = 2)
+  plot(Neo_spd,runm=1, add = TRUE, type = 'simple', col = 'darkred', lwd = 1.5, lty = 2)
+  plot(Obs_spd,runm=1, add = TRUE, type = 'simple', col = 'darkgreen', lwd = 1.5, lty = 2)
+  
+  #### 2.2 PREPARE UTILITIES AND OBSERVED SUMMARY STATISTICS
+  
+  ## Start and end of the chronological frame
+  strt <- Neo_spd$grid[1,1]
+  end <- Neo_spd$grid[nrow(Neo_spd$grid),1]
+  
+  saveRDS(Meso_spd,file = paste0("Data/Simulated/",time[i],"_years/Tactical_",ndates,"_dates_hg_",time[i],"_years_2.rds"))
+  saveRDS(Neo_spd,file = paste0("Data/Simulated/",time[i],"_years/Tactical_",ndates,"_dates_f_",time[i],"_years_2.rds"))
+  saveRDS(Dates$Sd[Dates$Culture=="hg"], file = paste0("Data/Simulated/",time[i],"_years/Sd_Tactical_",ndates,"_dates_hg_",time[i],"_years_2.rds"))
+  saveRDS(Dates$Sd[Dates$Culture=="f"], file = paste0("Data/Simulated/",time[i],"_years/Sd_Tactical_",ndates,"_dates_f_",time[i],"_years_2.rds"))
+  
+}

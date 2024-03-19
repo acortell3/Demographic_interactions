@@ -1,0 +1,41 @@
+
+
+
+#### Boxplots
+
+## Load data
+
+Denmark_pars <- readRDS("Results/Observed/Denmark/Denmark_selected_pars.rds")
+Japan_pars <- readRDS("Results/Observed/Japan/Japan_selected_pars.rds")
+Iberia_pars <- readRDS("Results/Observed/Iberia/Iberia_selected_pars.rds")
+
+## Extract parameters
+Combined_dm <- data.frame("Denmark" = sapply(Denmark_pars, function(x) x[[2]]$Dm),
+                          "Japan" = sapply(Japan_pars, function(x) x[[2]]$Dm),
+                          "Iberia" = sapply(Iberia_pars, function(x) x[[2]]$Dm))
+Combined_dn <- data.frame("Denmark" = sapply(Denmark_pars, function(x) x[[2]]$Dn),
+                          "Japan" = sapply(Japan_pars, function(x) x[[2]]$Dn),
+                          "Iberia" = sapply(Iberia_pars, function(x) x[[2]]$Dn))
+Combined_gm <- data.frame("Denmark" = sapply(Denmark_pars, function(x) x[[2]]$Gm),
+                          "Japan" = sapply(Japan_pars, function(x) x[[2]]$Gm),
+                          "Iberia" = sapply(Iberia_pars, function(x) x[[2]]$Gm))
+Combined_gn <- data.frame("Denmark" = sapply(Denmark_pars, function(x) x[[2]]$Gn)+
+                            sapply(Denmark_pars, function(x) x[[2]]$m),
+                          "Japan" = sapply(Japan_pars, function(x) x[[2]]$Gn)+
+                            sapply(Japan_pars, function(x) x[[2]]$m),
+                          "Iberia" = sapply(Iberia_pars, function(x) x[[2]]$Gn)+
+                            sapply(Iberia_pars, function(x) x[[2]]$m))
+Combined_e <- data.frame("Denmark" = sapply(Denmark_pars, function(x) x[[2]]$e),
+                          "Japan" = sapply(Japan_pars, function(x) x[[2]]$e),
+                          "Iberia" = sapply(Iberia_pars, function(x) x[[2]]$e))
+
+
+par(mfrow = c(2,3))
+boxplot(Combined_dm, main = "Dm", ylim = c(0,0.04), col = "lemonchiffon3")
+boxplot(Combined_gm, main = "Gm", ylim = c(0.001,0.022), col = "lemonchiffon3")
+boxplot(Combined_dn, main = "Dn", ylim = c(0,0.04), col = "lemonchiffon3")
+boxplot(Combined_gn, main = "Gn", ylim = c(0.015,0.07), col = "lemonchiffon3")
+boxplot(Combined_e, main = "e", ylim = c(0,0.3), col = "lemonchiffon3")
+
+
+

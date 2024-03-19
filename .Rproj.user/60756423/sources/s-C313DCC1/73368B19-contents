@@ -1,0 +1,248 @@
+
+
+
+## Plot for HDP
+
+## Load libraries
+library(coda)
+library(colorRamps)
+library(LaplacesDemon)
+
+## Functions
+
+## This is a customisation of the joint.density.plot function. This function can be found originally at the 
+## LaplacesDemon package, by Statistica, LLC <<add url>>
+
+## Changes as follows
+## 1. Addition of argument crp to customise color plots
+## 2. Addition of argument nlevels, which permits adjusting of the density of contour curves
+## 3. Addition of argument kendens for finer-grained density kernels
+## 4. Addition of utility arguments to customise plots (e. g. labels)
+
+joint.density.plot.custom <- function (x, y, Title = NULL, contour = TRUE, color = FALSE, 
+                                       Trace = NULL, crp, nlevels = 10, kendens = 25, xlab, ylab) {
+  x <- as.vector(x)
+  y <- as.vector(y)
+  if (!identical(length(y), length(x))) 
+    stop("vectors x and y must be the same length.")
+  if (any(!is.finite(x))) 
+    stop("x must have finite values.")
+  if (any(!is.finite(y))) 
+    stop("y must have finite values.")
+  kde2d <- function(x, y, h, n = kendens, lims = c(range(x), range(y))) {
+    nx <- length(x)
+    if (any(!is.finite(lims))) 
+      stop("x and y must have finite values.")
+    n <- rep(n, length.out = 2L)
+    gx <- seq.int(lims[1L], lims[2L], length.out = n[1L])
+    gy <- seq.int(lims[3L], lims[4L], length.out = n[2L])
+    h <- if (missing(h)) 
+      c(bandwidth.nrd(x), bandwidth.nrd(y))
+    else rep(h, length.out = 2L)
+    h <- h/4
+    ax <- outer(gx, x, "-")/h[1L]
+    ay <- outer(gy, y, "-")/h[2L]
+    z <- tcrossprod(matrix(dnorm(ax), , nx), matrix(dnorm(ay), 
+                                                    , nx))/(nx * h[1L] * h[2L])
+    list(x = gx, y = gy, z = z)
+  }
+  bandwidth.nrd <- function(x) {
+    r <- quantile(x, c(0.25, 0.75))
+    h <- (r[2L] - r[1L])/1.34
+    4 * 1.06 * min(sqrt(var(x)), h) * length(x)^(-1/5)
+  }
+  dd <- kde2d(x, y)
+  if (color == FALSE) {
+    plot(x, y, cex = 0.1, main = Title, xlab = xlab, ylab = ylab, 
+         col = "gray")
+  }
+  else if (color == TRUE) {
+    #crp <- colorRampPalette(c("black", "red", "yellow", "white"), 
+    #                        space = "rgb")
+    crp <- crp
+    image(dd, main = Title, xlab = xlab, ylab = ylab, col = crp(200))
+  }
+  if (contour == TRUE) {
+    contour(dd, nlevels = nlevels, add = TRUE)
+  }
+  if (!is.null(Trace)) {
+    if (length(Trace) != 2) 
+      stop("Trace requires 2 elements.")
+    if (Trace[1] >= Trace[2]) 
+      stop("Trace[1] not smaller than Trace[2].")
+    if (Trace[1] < 1) 
+      stop("Trace[1] < 1.")
+    if (Trace[2] > length(x)) 
+      stop("Trace[2] > length(x).")
+    lines(x[Trace[1]:Trace[2]], y[Trace[1]:Trace[2]], col = "green")
+    points(x[Trace[1]], y[Trace[1]], cex = 0.5, col = "green")
+  }
+}
+
+## Compute credible interval for the posterior check
+credint <- function(x, lev = 0.95){
+  if (lev == 0.95){
+    lowbnd <- quantile(x,0.025)
+    upbnd <- quantile(x,0.975)
+  } else {
+    int <- (1-lev)/2
+    lowbnd <- quantile(x,0+int)
+    upbnd <- quantile(x,1-int)
+  }
+  return(c(lowbnd,upbnd))
+}
+
+## Maximum and minimum values for the posterior check
+maxmin <- function(x){
+  maxval <- max(x)
+  minval <- min(x)
+  return(c(minval,maxval))
+}
+
+## Load data
+geographic_area <- c("Denmark", "Japan", "Iberia")
+n_theta <- 7
+beginning <- seq(100,200,100)
+#j <- 1
+#k <- 2
+for (j in 1:length(geographic_area)){
+#for (j in 1:1){
+  
+  par(mfrow = c(2,2))
+  for (h in 1:length(beginning)){
+    
+    ### Posterior check
+    ## Load observed data
+    Neo_spd <- readRDS(paste0("Data/Observed/",geographic_area[j],"/",geographic_area[j],"_",as.character(beginning[h]),"_years_before_f.rds"))
+    Meso_spd <- readRDS(paste0("Data/Observed/",geographic_area[j],"/",geographic_area[j],"_",as.character(beginning[h]),"_years_before_hg.rds"))
+    Sd_hg <- readRDS(paste0("Data/Observed/",geographic_area[j],"/",geographic_area[j],"_",as.character(beginning[h]),"_years_before_Sd_hg.rds"))
+    Sd_f <- readRDS(paste0("Data/Observed/",geographic_area[j],"/",geographic_area[j],"_",as.character(beginning[h]),"_years_before_Sd_f.rds"))
+    
+    Tot_dates <- Neo_spd$metadata$ndates + Meso_spd$metadata$ndates
+    
+    ### Posterior check
+    fit <- readRDS(paste0("Results/Observed/",geographic_area[j],"/",geographic_area[j],"_",beginning[h],"_years_before_theta_i_fit_part_",n_theta,"_fit.rds"))
+    
+    
+    ## Extract densities
+    Dens_Neo <- sapply(fit, function(x) x[[3]]$grid$PrDens)
+    Dens_Meso <- sapply(fit, function(x) x[[2]]$grid$PrDens)
+    
+    ## Extract credible intervals
+    CI_Neo <- apply(Dens_Neo,1,credint)
+    CI_Meso <- apply(Dens_Meso,1,credint)
+    
+    ## Extract max min vals
+    Maxmin_Neo <- apply(Dens_Neo,1,maxmin)
+    Maxmin_Meso <- apply(Dens_Meso,1,maxmin)
+    
+    ## Do the plot
+    
+    plot(Neo_spd$grid$PrDens, type = "l", lwd = 0.1, xlab = "Years BP", ylab = "Density", 
+         xaxt = "n", xlim = c(0,(length(CI_Meso[1,])-1)), main = paste0(geographic_area[j], " ", beginning[h], " years before"),
+         ylim = c(0,max(Maxmin_Neo[2,])))
+    axis(1,labels = c(Neo_spd$grid$calBP[1],
+                      Neo_spd$grid$calBP[1]-200,
+                      Neo_spd$grid$calBP[1]-400,
+                      Neo_spd$grid$calBP[1]-600,
+                      Neo_spd$grid$calBP[1]-800,
+                      Neo_spd$grid$calBP[1]-1000), at = c(0,200,400,600,800,1000))
+    axis(3,labels = paste0("ndates = ", Tot_dates), at = 50, tick = F, font = 4)
+    polygon(x=c(c(0:(length(CI_Neo[1,])-1)),c((length(CI_Neo[1,])-1):0)), 
+            y = c(CI_Neo[1,],rev(CI_Neo[2,])), 
+            col = adjustcolor("darkslategray4", alpha.f = 0.3), border = NA)
+    lines(Maxmin_Neo[1,], col = "darkslategray4", lwd = 0.7, lty = 3)
+    lines(Maxmin_Neo[2,], col = "darkslategray4", lwd = 0.7, lty = 3)
+    lines(Neo_spd$grid$PrDens, col = "darkslategray4", lwd = 1.5)
+    
+    polygon(x=c(c(0:(length(CI_Meso[1,])-1)),c((length(CI_Meso[1,])-1):0)), 
+            y = c(CI_Meso[1,],rev(CI_Meso[2,])), 
+            col = adjustcolor("brown4", alpha.f = 0.3), border = NA)
+    lines(Maxmin_Meso[1,], col = "brown4", lwd = 0.7, lty = 3)
+    lines(Maxmin_Meso[2,], col = "brown4", lwd = 0.7, lty = 3)
+    lines(Meso_spd$grid$PrDens, col = "brown4", lwd = 1.5)
+  }
+  
+  ### And now parameters
+  for (h in 1:length(beginning)){  
+    
+    ## Utilities and preparing data
+    model_dat <- readRDS(paste0("Results/Observed/",geographic_area[j],"/",geographic_area[j],"_",beginning[h],"_years_before_theta_part_",n_theta,"_fit.rds"))
+    
+    params <- data.frame("Dm" = sapply(model_dat, function(x) x[[2]]$Dm),
+                         "Gm" = sapply(model_dat, function(x) x[[2]]$Gm),
+                         "Dn" = sapply(model_dat, function(x) x[[2]]$Dn),
+                         "Gn" = sapply(model_dat, function(x) x[[2]]$Gn),
+                         "e" = sapply(model_dat, function(x) x[[2]]$e),
+                         "m" = sapply(model_dat, function(x) x[[2]]$m))
+    
+    ### Plot joint posteriors
+    ## This is to plot together Gn and m
+    params$Gn <- params$Gn+params$m
+    params <- params[,-ncol(params)]
+    #colnames(params)[4] <- "G'n"
+    
+    ## To assign names
+    nameDm <- expression(paste(delta,"m"))
+    nameGm <- expression(paste(gamma,"m"))
+    nameDn <- expression(paste(delta,"n"))
+    nameGn <- expression(paste(gamma,"'n"))
+    namee <- expression(eta)
+    #namem <- expression(mu)
+    
+    
+    ## Plot with HPDI
+    par(mfrow = c(2,3))
+    
+    for (i in 1:ncol(params)){
+      Dens <- density(params[,i], adjust = 2)
+      
+      ## Compute credible intervals to show in plot
+      HPDI_95 <- HPDinterval(as.mcmc(params[,i]))
+      HPDI_95_range <- Dens$x > HPDI_95[1] & Dens$x < HPDI_95[2] 
+      
+      HPDI_80 <- HPDinterval(as.mcmc(params[,i]), 0.8)
+      HPDI_80_range <- Dens$x > HPDI_80[1] & Dens$x < HPDI_80[2] 
+      
+      ## Compute mean and median to show in plot
+      m <- round(mean(params[,i]),4)
+      me <- round(median(params[,i]),4)
+      
+      plot(Dens, lwd = 0.1, main = paste0(geographic_area[j], " ", colnames(params)[i], " " , beginning[h], " years"), xlab = "value", ylim = c(0,max(Dens$y)+5))
+      polygon(c(HPDI_95[1], Dens$x[HPDI_95_range], HPDI_95[2]),                
+              c(0, Dens$y[HPDI_95_range],0),
+              col = adjustcolor("lightsalmon3", alpha.f = 0.5), border = "black", lty = 3,
+              lwd = 0.5)
+      polygon(c(HPDI_80[1], Dens$x[HPDI_80_range], HPDI_80[2]),                
+              c(0, Dens$y[HPDI_80_range],0),
+              col = adjustcolor("lightsalmon3", alpha.f = 0.5), border = "black", lty = 3,
+              lwd = 0.5)
+      lines(Dens, col = "lightsalmon4", lwd = 1.5)
+      
+      mtext(text = paste0("mean = ",m," median = ", me), side = 3)
+    }
+    
+    crp <- colorRampPalette(c("grey100","brown4"))
+    
+    layout(matrix(c(1:(ncol(params)*ncol(params))),nrow = ncol(params)))
+    for (i in 1:ncol(params)){
+      plot(density(params[,i], adjust = 2), main = get(paste0("name",colnames(params)[i])), xlab = "", ylab = "", 
+           col = "darkred", lwd = 1.2)
+      if (i < ncol(params)){
+        for (l in (1+i):ncol(params)){
+          joint.density.plot.custom(params[,i],params[,l], contour = FALSE, color = TRUE, crp = crp, kendens = 300,
+                                    xlab = get(paste0("name",colnames(params)[i])),
+                                    ylab = get(paste0("name",colnames(params)[l])))
+        }
+        for (k in 1:i){
+          plot.new()
+        }
+      }
+    }
+    #mtext(paste0(geographic_area[j], " " , beginning[h], " years"),
+    #      side = 3, line = 40, adj = 5, font = 2, cex = 1.5)
+    
+  }
+  
+}
+

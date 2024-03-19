@@ -1,0 +1,118 @@
+
+
+
+## Load data and functions
+source("Scripts/01_Functions.R")
+source("Scripts/Data_for_plots.R")
+library(vioplot)
+
+## Prepare utilities
+params_Ib <- data.frame("Dm" = sapply(model_list_Ib, function(x) x[[2]]$Dm),
+                        "Gm" = sapply(model_list_Ib, function(x) x[[2]]$Gm),
+                        "Dn" = sapply(model_list_Ib, function(x) x[[2]]$Dn),
+                        "Gn" = sapply(model_list_Ib, function(x) x[[2]]$Gn),
+                        "e" = sapply(model_list_Ib, function(x) x[[2]]$e),
+                        "m" = sapply(model_list_Ib, function(x) x[[2]]$m))
+params_Ib$Gn <- params_Ib$Gn+params_Ib$m
+
+params_Ja <- data.frame("Dm" = sapply(model_list_Ja, function(x) x[[2]]$Dm),
+                        "Gm" = sapply(model_list_Ja, function(x) x[[2]]$Gm),
+                        "Dn" = sapply(model_list_Ja, function(x) x[[2]]$Dn),
+                        "Gn" = sapply(model_list_Ja, function(x) x[[2]]$Gn),
+                        "e" = sapply(model_list_Ja, function(x) x[[2]]$e),
+                        "m" = sapply(model_list_Ja, function(x) x[[2]]$m))
+params_Ja$Gn <- params_Ja$Gn+params_Ja$m
+
+params_De <- data.frame("Dm" = sapply(model_list_De, function(x) x[[2]]$Dm),
+                        "Gm" = sapply(model_list_De, function(x) x[[2]]$Gm),
+                        "Dn" = sapply(model_list_De, function(x) x[[2]]$Dn),
+                        "Gn" = sapply(model_list_De, function(x) x[[2]]$Gn),
+                        "e" = sapply(model_list_De, function(x) x[[2]]$e),
+                        "m" = sapply(model_list_De, function(x) x[[2]]$m))
+params_De$Gn <- params_De$Gn+params_De$m
+
+# Index to select parameters
+sel_par <- c("Dm","Gm","Dn","Gn","e")
+
+## To assign names with math letters
+nameDm <- expression(paste(delta["hg"]))
+nameGm <- expression(paste(gamma["hg"]))
+nameDn <- expression(paste(delta["f"]))
+nameGn <- expression(paste(gamma["'f"]))
+namee <- expression(eta)
+
+#tiff("./Figures/Fig_4.tiff", width = 1000, height = 700)
+png("./Figures/Fig_4.png", width = 1000, height = 700)
+
+par(mfrow = c(2,3))
+
+## Prepare density for legend
+normdens <- density(rnorm(10000,32,0.5), bw = 4)
+
+plot(x=normdens$x,y=normdens$y/max(normdens$y)+5, type = "l", ylim = c(1,7.5), xlim = c(0,50),
+     col = "white", axes = FALSE, ylab = "", xlab = "")
+polygon(normdens$x,normdens$y/max(normdens$y)+5, col = adjustcolor("mediumorchid4", alpha.f = 0.6), border = "gray")
+polygon(normdens$x,normdens$y/max(normdens$y)+3, col = adjustcolor("cadetblue3", alpha.f = 0.6), border = "gray")
+polygon(normdens$x,normdens$y/max(normdens$y)+1, col = adjustcolor("sienna4", alpha.f = 0.6), border = "gray")
+
+mtext("Denmark", 2, at = 5.5, las = 2, line = -4.5, col = "gray25", cex = 1.6, font = 2)
+mtext("Iberia", 2, at = 3.5, las = 2, line = -4.5, col = "gray25", cex = 1.6, font = 2)
+mtext("Japan", 2, at = 1.5, las = 2, line = -4.5, col = "gray25", cex = 1.6, font = 2)
+
+for (i in 1:5){
+  parDe <- params_De[,i]
+  parIb <- params_Ib[,i]
+  parJa <- params_Ja[,i]
+  
+  ## To automatically create ylimit depending on the area
+  ylobj <- c(parDe,parIb,parJa)
+  yl <- max(ylobj) + (max(ylobj)-quantile(max(ylobj))[2])
+
+  # Common parameters
+  peach <- 21
+  alph <- 0.4
+  cexx <- 0.6
+  
+  set.seed(1)
+
+  ## Create structure and background
+  plot(x = c(1,7), y = c(0,0), type = "l", col = "gray", lwd = 0, axes = FALSE, ylab = "Density", xlab = "",
+       ylim = c(0,yl))
+  line_bg <- axis(2, tck = -0.015)
+  abline(h=line_bg,col = "gray",lwd = 0.5)
+  title(get(paste0("name",sel_par[i])))
+
+  ## Plot distributions
+  ## Denmark
+  points(x = rnorm(length(parDe),2,0.2), parDe, col = adjustcolor("black", alpha.f = alph), 
+         pch = peach, cex = cexx, bg = adjustcolor("mediumorchid4", alpha.f = alph))
+  vioplot(parDe, col = adjustcolor("mediumorchid4", alpha.f = 0.6), border = "gray", add = TRUE, drawRect = FALSE,
+         at = 2, pchMed = NA, colMed = NA)
+  rect(xleft = 1.95, ybottom = bayestestR::hdi(parDe)$CI_low, xright = 2.05, ytop = bayestestR::hdi(parDe)$CI_high, 
+       col = "mediumorchid4", border = "gray")
+  segments(x1 = 1, y1 = median(parDe),x0 = 3, y0 = median(parDe), col = "red", lty = 2, lwd = 1.2)
+
+  ## Iberia
+  points(x = rnorm(length(parIb),4,0.2), parIb, col = adjustcolor("black", alpha.f = alph), pch = peach, cex = cexx, 
+         bg = adjustcolor("cadetblue3", alpha.f = alph))
+  vioplot(parIb, col = adjustcolor("cadetblue3", alpha.f = 0.6), border = "gray", add = TRUE, drawRect = FALSE,
+          at = 4, pchMed = NA, colMed = NA)
+  rect(xleft = 3.95, ybottom = bayestestR::hdi(parIb)$CI_low, xright = 4.05, ytop = bayestestR::hdi(parIb)$CI_high, 
+       col = "cadetblue4", border = "gray")
+  segments(x1 = 3, y1 = median(parIb),x0 = 5, y0 = median(parIb), col = "red", lty = 2, lwd = 1.2)
+  
+  
+  ## Japan
+  points(x = rnorm(length(parJa),6,0.2), parJa, col = adjustcolor("black", alpha.f = alph), pch = peach, cex = cexx, 
+         bg = adjustcolor("sienna4", alpha.f = alph))
+  vioplot(parJa, col = adjustcolor("sienna4", alpha.f = 0.6), border = "gray", add = TRUE, drawRect = FALSE,
+          at = 6, pchMed = NA, colMed = NA)
+  rect(xleft = 5.95, ybottom = bayestestR::hdi(parJa)$CI_low, xright = 6.05, ytop = bayestestR::hdi(parJa)$CI_high, 
+       col = "sienna4", border = "gray")
+  segments(x1 = 5, y1 = median(parJa),x0 = 7, y0 = median(parJa), col = "red", lty = 2, lwd = 1.2)
+  
+}
+
+dev.off()
+
+

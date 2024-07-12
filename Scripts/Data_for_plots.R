@@ -1,18 +1,4 @@
 
-################################################################################
-################################################################################
-
-####### Code for: Demographic interactions of the last hunter-gatherers and the first farmers (2024):
-
-#### License: Permission is granted to use and adapt this code. Please 
-#### acknowledge authorship when appropriate.
-
-################################################################################
-################                                                ################
-################                      SECTION 4 (aux)           ################
-################                                                ################
-################################################################################
-
 
 ### DATA FOR PLOTS
 
@@ -60,7 +46,7 @@ Meso_spd_De <- readRDS("Data/Observed/Denmark/Denmark_100_years_before_hg.rds")
 Sd_hg_De <- readRDS("Data/Observed/Denmark/Denmark_100_years_before_Sd_hg.rds")
 Sd_f_De <- readRDS("Data/Observed/Denmark/Denmark_100_years_before_Sd_f.rds")
 
-## Utilities
+
 
 
 

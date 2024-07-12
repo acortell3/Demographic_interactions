@@ -28,7 +28,11 @@ Additionally, the full output of the results has been uploaded to Zenodo for acc
 
 ### Figures
 
-Contains the figures used in the paper. These can be generated again using the script `04.Plots.R`.
+Contains the figures used in the paper. These can be generated again using the script `05_Plots_Results.R`.
+
+### Results
+
+Contains the results. Although the user can run the model again, if it wants to observe the results it will be faster to do it from here (see below).
 
 ### Scripts
 
@@ -43,8 +47,14 @@ These generated the simulated data and prepare and filter the observed data acco
 `03*ABC_*.R`
 The scripts where the model is done. They retrieve the data from the structured folders and produced in the scripts above.
 
-`04_Plots.R`
-Produced the plots seen in the paper. It `sources` the functions and data from the previous scripts.
+`04_Sensitivity.R`
+Calculations to explore the parameter space.
+
+`05_Plots_Results.R`
+Produced the plots seen in the paper. It `sources` the functions and data from the previous scripts. It also contains some specific results such as the ratio computations.
+
+`Data_for_plots.R`
+Just data to use in the plots, so that people do not have to do the whole process.
 
 ## REPRODUCIBILITY
 
@@ -58,10 +68,10 @@ In order to do this, the user must change the following, at the `03.1_ABC_Simula
 - Line 207: Reduce the number of particles (perhaps `part_sim <- 500`?)
 - Line 217: Set one single stage with while `(n_theta <= 1)`
 
-This will only produce a ver small number of (non-usable) simulation, but concluding this garantees that the code works and the user can then set higher values to send to a computer cluster. 
+This will only produce a ver small number of (non-usable) simulation, but this ensures that the code works and the user can then set higher values to send to a computer cluster. 
 
 If the user wants to try two or more particles, but still compute fast(ish), it will have to change the `line 203` and set a very high threshold. Too low unassessed thresholds might result in the stuck of the algorith, since in the parallelisation the model might never be able reach those values (hence using quantiles here).
 
-If the user wants to do the same operation with the scripts `03.1_ABC_Observed.R` the protocol is the same, althgough the numbers of the lines can vary slightly. 
+If the user wants to do the same operation with the scripts `03.1_ABC_Observed.R` the protocol is the same, although the numbers of the lines can vary slightly. 
 
 

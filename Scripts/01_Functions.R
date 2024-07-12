@@ -2,8 +2,11 @@
 ################################################################################
 ################################################################################
 
-####### Code for: Demographic interactions of the last hunter-gatherers and the first farmers (2024):
+####### Code for: The interacting demographic dynamics of the last hunter-gatherers and the early farmers (2024):
+####### Cortell-Nicolau, A., Rivas, J., Crema, E. R., Shennan, S., García-Puchol, O., Kolar, J., Staniuk, R., 
+####### Timpson, A.
 
+#### Code by: Alfredo Cortell-Nicolau.
 
 #### License: Permission is granted to use and adapt this code. Please 
 #### acknowledge authorship when appropriate.

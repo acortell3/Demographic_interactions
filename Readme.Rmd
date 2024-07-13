@@ -1,5 +1,5 @@
 ---
-title: "Readme for The interacting demographic dynamics of the last hunter-gatheers and the early farmers"
+title: "Readme for The interacting demographic dynamics of the last hunter-gatherers and the early farmers"
 author: "Alfredo Cortell-Nicolau"
 output:
   html_document: default

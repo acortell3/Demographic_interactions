@@ -26,15 +26,11 @@ The folder `Data` contains three subfolders: `Sim_selected_500`, `Simulated` and
 
 Additionally, the full output of the results has been uploaded to Zenodo for accountabiliity (doi: 10.5281/zenodo.10837744) although, as mentioned before, it is not necessary to reproduce the code (it's actually the results that the code produces!).
 
-The current folder `Results` only contains the results of the parameter exploration, and it is necessary to reproduce figure 6 and r values.
 
 ### Figures
 
 Contains the figures used in the paper. These can be generated again using the script `05_Plots_Results.R`.
 
-### Results
-
-Contains the results. Although the user can run the model again, if it wants to observe the results it will be faster to do it from here (see below).
 
 ### Scripts
 
@@ -50,7 +46,7 @@ These generated the simulated data and prepare and filter the observed data acco
 The scripts where the model is done. They retrieve the data from the structured folders and produced in the scripts above.
 
 `04_Sensitivity.R`
-Calculations to explore the parameter space.
+Calculations to explore the parameter space. **In order to reproduce figure 6, it is necessary to run this script first**, creating the appropriate data structure (or adapting the script paths to the user's preference).
 
 `05_Plots_Results.R`
 Produced the plots seen in the paper. It `sources` the functions and data from the previous scripts. It also contains some specific results such as the ratio computations.

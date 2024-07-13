@@ -26,6 +26,8 @@ The folder `Data` contains three subfolders: `Sim_selected_500`, `Simulated` and
 
 Additionally, the full output of the results has been uploaded to Zenodo for accountabiliity (doi: 10.5281/zenodo.10837744) although, as mentioned before, it is not necessary to reproduce the code (it's actually the results that the code produces!).
 
+The current folder `Results` only contains the results of the parameter exploration, and it is necessary to reproduce figure 6 and r values.
+
 ### Figures
 
 Contains the figures used in the paper. These can be generated again using the script `05_Plots_Results.R`.

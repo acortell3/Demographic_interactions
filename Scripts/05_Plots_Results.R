@@ -493,7 +493,7 @@ png("./Figures/Fig_6.png", width = 1200, height = 850)
 par(mfrow = c(3,2))
 
 ## Time to surpass
-plot(dens_t_t_s_De, main = "Time to surpass", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE)
+plot(dens_t_t_s_De, main = "Time to surpass", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_s_De_df$x, dens_t_t_s_De_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_s_De_df_HPDI$x,rev(dens_t_t_s_De_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_s_De_df_HPDI$x)),rev(dens_t_t_s_De_df_HPDI$y)), 
@@ -502,7 +502,7 @@ abline(v = median(t_t_s_De), lty = 2, col = "white")
 axis(1)
 mtext("Denmark",2, cex = 1.2, font = 2, line = 1)
 
-plot(dens_t_t_d_De, main = "Time to hg disappearance", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE)
+plot(dens_t_t_d_De, main = "Time to hg disappearance", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_d_De_df$x, dens_t_t_d_De_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_d_De_df_HPDI$x,rev(dens_t_t_d_De_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_d_De_df_HPDI$x)),rev(dens_t_t_d_De_df_HPDI$y)), 
@@ -510,7 +510,7 @@ polygon(c(dens_t_t_d_De_df_HPDI$x,rev(dens_t_t_d_De_df_HPDI$x)),
 abline(v = median(na.omit(t_t_d_De)), lty = 2, col = "white")
 axis(1)
 
-plot(dens_t_t_s_Ja, col = "lightblue4", ylab = "", xlab = "Years", main = "", axes = FALSE)
+plot(dens_t_t_s_Ja, col = "lightblue4", ylab = "", xlab = "Years", main = "", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_s_Ja_df$x, dens_t_t_s_Ja_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_s_Ja_df_HPDI$x,rev(dens_t_t_s_Ja_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_s_Ja_df_HPDI$x)),rev(dens_t_t_s_Ja_df_HPDI$y)), 
@@ -519,7 +519,7 @@ abline(v = median(t_t_s_Ja), lty = 2, col = "white")
 axis(1)
 mtext("Japan",2, cex = 1.2, font = 2, line = 1)
 
-plot(dens_t_t_d_Ja, col = "lightblue4", ylab = "", xlab = "Years", main = "", axes = FALSE)
+plot(dens_t_t_d_Ja, col = "lightblue4", ylab = "", xlab = "Years", main = "", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_d_Ja_df$x, dens_t_t_d_Ja_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_d_Ja_df_HPDI$x,rev(dens_t_t_d_Ja_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_d_Ja_df_HPDI$x)),rev(dens_t_t_d_Ja_df_HPDI$y)), 
@@ -527,7 +527,7 @@ polygon(c(dens_t_t_d_Ja_df_HPDI$x,rev(dens_t_t_d_Ja_df_HPDI$x)),
 abline(v = median(t_t_d_Ja), lty = 2, col = "white")
 axis(1)
 
-plot(dens_t_t_s_Ib, main = "", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE)
+plot(dens_t_t_s_Ib, main = "", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_s_Ib_df$x, dens_t_t_s_Ib_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_s_Ib_df_HPDI$x,rev(dens_t_t_s_Ib_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_s_Ib_df_HPDI$x)),rev(dens_t_t_s_Ib_df_HPDI$y)), 
@@ -537,7 +537,7 @@ axis(1)
 mtext("Iberia",2, cex = 1.2, font = 2, line = 1)
 
 
-plot(dens_t_t_d_Ib, main = "", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE)
+plot(dens_t_t_d_Ib, main = "", col = "lightblue4", ylab = "", xlab = "Years", axes = FALSE, xlim = c(0,800))
 polygon(dens_t_t_d_Ib_df$x, dens_t_t_d_Ib_df$y, col = adjustcolor("lightblue", alpha.f = 0.4), border = NA)
 polygon(c(dens_t_t_d_Ib_df_HPDI$x,rev(dens_t_t_d_Ib_df_HPDI$x)),
         c(rep(0.00001,length(dens_t_t_d_Ib_df_HPDI$x)),rev(dens_t_t_d_Ib_df_HPDI$y)), 

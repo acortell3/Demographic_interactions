@@ -1,10 +1,4 @@
----
-title: "Readme for The interacting demographic dynamics of the last hunter-gatherers and the early farmers"
-author: "Alfredo Cortell-Nicolau"
-output:
-  html_document: default
-  pdf_document: default
----
+
 
 <!-- rmarkdown v1 -->
 

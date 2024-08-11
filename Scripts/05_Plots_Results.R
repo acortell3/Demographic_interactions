@@ -61,7 +61,10 @@ leg_vals <- c("0-200 y","200-400 y","400-600 y","600-800 y",
 
 ## Time to peak
 
-png("./Figures/Fig_2.png", width = 1200, height = 850)
+#png("./Figures/Fig_2.png", width = 1200, height = 850)
+png("./Figures/Fig_2.png", width = 42, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_2.tiff", width = 1200, height = 850)
+
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -98,7 +101,9 @@ dev.off()
 #####################               FIG. 3              ########################
 ################################################################################
 
-png("./Figures/Fig_3.png", width = 1200, height = 850)
+#png("./Figures/Fig_3.png", width = 1200, height = 850)
+png("./Figures/Fig_3.png", width = 42, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_3.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -165,8 +170,9 @@ plot_ticks <- list("Iberia" = data.frame("Year" = c(Neo_spd_Ib$grid$calBP[1]-195
                                                      Neo_spd_De$grid$calBP[1]-2745),
                                           "Position" =  c(-5,195,395,595,795,995)))
 
+#png("./Figures/Fig_4.png", width = 1000, height = 700)
+png("./Figures/Fig_4.png", width = 33, height = 25, unit = "cm", res = 300)
 #tiff("./Figures/Fig_4.tiff", width = 1000, height = 700)
-png("./Figures/Fig_4.png", width = 1000, height = 700)
 
 ## Layout parameters
 mat_plot <- matrix(c(1,1,2,3,3,4,5,5,6), nrow = 3, byrow = TRUE)
@@ -297,8 +303,9 @@ nameDn <- expression(paste(delta["f"]))
 nameGn <- expression(paste(gamma["'f"]))
 namee <- expression(eta)
 
+#png("./Figures/Fig_5.png", width = 1000, height = 700)
+png("./Figures/Fig_5.png", width = 33, height = 25, unit = "cm", res = 300)
 #tiff("./Figures/Fig_5.tiff", width = 1000, height = 700)
-png("./Figures/Fig_5.png", width = 1000, height = 700)
 
 par(mfrow = c(2,3))
 
@@ -488,7 +495,9 @@ dens_t_t_d_Ib_df_HPDI <- dens_t_t_d_Ib_df[dens_t_t_d_Ib_df$x >= t_t_d_Ib_HPDI_lo
 
 
 ## Plots
-png("./Figures/Fig_6.png", width = 1200, height = 850)
+#png("./Figures/Fig_6.png", width = 1200, height = 850)
+png("./Figures/Fig_6.png", width = 40, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_6.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,2))
 
@@ -569,8 +578,9 @@ state <- c(M = 60, N = 6)
 methds1 <- readRDS("./Data/pars_lilower0_lihigher0.rds")
 out <- data.frame(LotVolme(methds1, times = c(1:600)))
 
+#png("./Figures/Fig_S1_1.png", width = 1000, height = 700)
+png("./Figures/Fig_S1_1.png", width = 33, height = 25, unit = "cm", res = 300)
 #tiff("./Figures/Fig_S1_1.tiff", width = 1000, height = 700)
-png("./Figures/Fig_S1_1.png", width = 1000, height = 700)
 
 plot(out[,2], type = "l", ylim = c(0,max(out[,3])), col = "black", lwd = 1.5,
      ylab = "Population", xlab = "time", main = expression(paste(lambda["1"]," < 0 and ", lambda["2"], " > 0")))
@@ -591,8 +601,9 @@ dev.off()
 methds2 <- readRDS("./Data/pars_lilower0_lilower0.rds")
 out <- data.frame(LotVolme(methds2, times = c(1:600)))
 
+#png("./Figures/Fig_S1_2.png", width = 1000, height = 700)
+png("./Figures/Fig_S1_2.png", width = 33, height = 25, unit = "cm", res = 300)
 #tiff("./Figures/Fig_S1_2.tiff", width = 1000, height = 700)
-png("./Figures/Fig_S1_2.png", width = 1000, height = 700)
 
 plot(out[,2], type = "l", ylim = c(0,max(out[,2])), col = "black", lwd = 1.5,
      ylab = "Population", xlab = "time", main = expression(paste(lambda["1"]," < 0 and ", lambda["2"], " < 0")))
@@ -639,8 +650,9 @@ Maxmin_Meso <- apply(Dens_Meso,1,maxmin)
 
 ## Plot figure
 
+#png("./Figures/Fig_S2_1.png", width = 1000, height = 700)
+png("./Figures/Fig_S2_1.png", width = 33, height = 25, unit = "cm", res = 300)
 #tiff("./Figures/Fig_S2_1.tiff", width = 1000, height = 700)
-png("./Figures/Fig_S2_1.png", width = 1000, height = 700)
 
 mat_layout <- matrix(c(rep(1,6),seq(2,7)),byrow = TRUE,nrow = 4)
 layout(mat_layout)
@@ -776,7 +788,9 @@ leg_vals <- c("0-200 y","200-400 y","400-600 y","600-800 y",
 
 ## Time to surpass
 
-png("./Figures/Fig_S3_1.png", width = 1200, height = 850)
+#png("./Figures/Fig_S3_1.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_1.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_1.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -817,7 +831,9 @@ dev.off()
 
 ## Time to extinction
 
-png("./Figures/Fig_S3_2.png", width = 1200, height = 850)
+#png("./Figures/Fig_S3_2.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_2.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_2.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -856,7 +872,9 @@ dev.off()
 
 ## Time to peak
 
-png("./Figures/Fig_S3_3.png", width = 1200, height = 850)
+#png("./Figures/Fig_S3_3.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_3.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_3.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -896,7 +914,9 @@ dev.off()
 
 ## Time to surpass
 
-png("./Figures/Fig_S3_4.png", width = 1200, height = 850)
+#png("./Figures/Fig_S3_4.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_4.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_4.tiff", width = 1200, height = 850)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
 for (i in 1:9){
@@ -925,3 +945,5 @@ dev.off()
 ################################################################################
 #####################           END FIG. S3 4           ########################
 ################################################################################
+
+

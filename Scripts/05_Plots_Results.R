@@ -43,7 +43,9 @@ library(paletteer)
 
 ## Prepare utilities
 time <- 1500
-colors <- colorspace::sequential_hcl(time, h = c(0,400), l = c(50,70)) ## Colour palettes
+colors <- colorspace::sequential_hcl(time, h = c(50,300), l = c(40,70),
+                                     c = 150) ## Colour palettes
+colors[1500] <- "white"
 nameGn <- expression(paste(gamma["'f"])) ## expressions for the axes
 nameGm <- expression(paste(gamma["hg"])) ## expressions for the axes
 
@@ -66,7 +68,7 @@ png("./Figures/Fig_2.png", width = 42, height = 30, unit = "cm", res = 300)
 #tiff("./Figures/Fig_2.tiff", width = 1200, height = 850)
 
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -79,13 +81,13 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i ==3){
-    legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
-           col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.039, y = 0.05, legend = c("Time to","peak"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)
-  }
+  #if (i ==3){
+  #  legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
+  #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.039, y = 0.05, legend = c("Time to","peak"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)
+  #}
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
 
@@ -105,7 +107,7 @@ dev.off()
 png("./Figures/Fig_3.png", width = 42, height = 30, unit = "cm", res = 300)
 #tiff("./Figures/Fig_3.tiff", width = 1200, height = 850)
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -118,13 +120,13 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i == 3) {
-    legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
-           col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.0685, y = 0.02, legend = c("Time to","extinction"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)
-  }
+  #if (i == 3) {
+  #  legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
+  #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.0685, y = 0.02, legend = c("Time to","extinction"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)
+  #}
   
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
@@ -343,7 +345,7 @@ for (i in 1:5){
        ylim = c(0,yl))
   line_bg <- axis(2, tck = -0.015)
   abline(h=line_bg,col = "gray",lwd = 0.5)
-  title(get(paste0("name",sel_par[i])))
+  title(get(paste0("name",sel_par[i])), cex.main = 2)
   
   ## Plot distributions
   ## Denmark
@@ -765,12 +767,14 @@ dev.off()
 
 
 ################################################################################
-#####################              FIG. S3 1            ########################
+#####################              FIG. S3 3            ########################
 ################################################################################
 
 ## Prepare utilities
 time <- 1500
-colors <- colorspace::sequential_hcl(time, h = c(0,400), l = c(50,70)) ## Colour palettes
+colors <- colorspace::sequential_hcl(time, h = c(50,300), l = c(40,70),
+                                     c = 150) ## Colour palettes
+colors[1500] <- "white"
 nameGn <- expression(paste(gamma["'f"])) ## expressions for the axes
 nameGm <- expression(paste(gamma["hg"])) ## expressions for the axes
 
@@ -788,11 +792,11 @@ leg_vals <- c("0-200 y","200-400 y","400-600 y","600-800 y",
 
 ## Time to surpass
 
-#png("./Figures/Fig_S3_1.png", width = 1200, height = 850)
-png("./Figures/Fig_S3_1.png", width = 41, height = 30, unit = "cm", res = 300)
-#tiff("./Figures/Fig_S3_1.tiff", width = 1200, height = 850)
+#png("./Figures/Fig_S3_3.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_3.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_3.tiff", width = 1200, height = 850)
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -806,13 +810,13 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i == 3){
-    legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
-           col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.039, y = 0.05, legend = c("Time to","surpass"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)
-  }
+  #if (i == 3){
+  #  legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
+  #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.039, y = 0.05, legend = c("Time to","surpass"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)
+  #}
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
 
@@ -820,22 +824,22 @@ dev.off()
 
 
 ################################################################################
-#####################           END FIG. S3 1           ########################
+#####################           END FIG. S3 3           ########################
 ################################################################################
 
 
 
 ################################################################################
-#####################              FIG. S3 2            ########################
+#####################              FIG. S3 4            ########################
 ################################################################################
 
 ## Time to extinction
 
-#png("./Figures/Fig_S3_2.png", width = 1200, height = 850)
-png("./Figures/Fig_S3_2.png", width = 41, height = 30, unit = "cm", res = 300)
-#tiff("./Figures/Fig_S3_2.tiff", width = 1200, height = 850)
+#png("./Figures/Fig_S3_4.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_4.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_4.tiff", width = 1200, height = 850)
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -848,13 +852,13 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i == 3){
-    legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
-           col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.039, y = 0.05, legend = c("Time to","extinction"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)
-  }
+  #if (i == 3){
+  #  legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
+  #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.0435, y = 0.0335, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.039, y = 0.05, legend = c("Time to","extinction"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)
+  #}
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
 
@@ -862,21 +866,21 @@ dev.off()
 
 
 ################################################################################
-#####################           END FIG. S3 2           ########################
+#####################           END FIG. S3 4           ########################
 ################################################################################
 
 
 ################################################################################
-#####################              FIG. S3 3            ########################
+#####################              FIG. S3 1            ########################
 ################################################################################
 
 ## Time to peak
 
-#png("./Figures/Fig_S3_3.png", width = 1200, height = 850)
-png("./Figures/Fig_S3_3.png", width = 41, height = 30, unit = "cm", res = 300)
-#tiff("./Figures/Fig_S3_3.tiff", width = 1200, height = 850)
+#png("./Figures/Fig_S3_1.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_1.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_1.tiff", width = 1200, height = 850)
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -889,14 +893,13 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i == 3){
-    legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
-           col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.0685, y = 0.02, legend = c("Time to","peak"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)
-    
-  }
+  i#f (i == 3){
+  #  legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
+  #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.0685, y = 0.02, legend = c("Time to","peak"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)
+  #}
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
 
@@ -904,21 +907,21 @@ dev.off()
 
 
 ################################################################################
-#####################           END FIG. S3 3           ########################
+#####################           END FIG. S3 1           ########################
 ################################################################################
 
 
 ################################################################################
-#####################              FIG. S3 4            ########################
+#####################              FIG. S3 2            ########################
 ################################################################################
 
 ## Time to surpass
 
-#png("./Figures/Fig_S3_4.png", width = 1200, height = 850)
-png("./Figures/Fig_S3_4.png", width = 41, height = 30, unit = "cm", res = 300)
-#tiff("./Figures/Fig_S3_4.tiff", width = 1200, height = 850)
+#png("./Figures/Fig_S3_2.png", width = 1200, height = 850)
+png("./Figures/Fig_S3_2.png", width = 41, height = 30, unit = "cm", res = 300)
+#tiff("./Figures/Fig_S3_2.tiff", width = 1200, height = 850)
 
-par(mfrow = c(3,3), mar = c(5,4,4,8), xpd = TRUE)
+par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
@@ -931,11 +934,11 @@ for (i in 1:9){
   grid(lty = 2, lwd = 0.3, col = "white")
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
-  if (i == 3){legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
-                     col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
-    legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
-    legend(x = 0.0685, y = 0.02, legend = c("Time to","surpass"), cex = 1.2, bty = "n", y.intersp = 1,
-           text.font = 2)}
+  #if (i == 3){legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
+  #                   col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
+  #  legend(x = 0.075, y = 0.0165, legend = leg_vals, bty = "n",  cex = 1, y.intersp = 1.25)
+  #  legend(x = 0.0685, y = 0.02, legend = c("Time to","surpass"), cex = 1.2, bty = "n", y.intersp = 1,
+  #         text.font = 2)}
   
   title(paste0("assimilation", " = ", e[i], " / ratio = ", ratio[i]))
 }
@@ -943,7 +946,7 @@ for (i in 1:9){
 dev.off()
 
 ################################################################################
-#####################           END FIG. S3 4           ########################
+#####################           END FIG. S3 2           ########################
 ################################################################################
 
 

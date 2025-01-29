@@ -104,9 +104,9 @@ for (i in 1:9){
   
   dat <- dat[,c(1,3,11)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   ## Plot the whole thing
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
+  mtext(nameDn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],
@@ -206,9 +206,9 @@ for (i in 1:9){
   
   dat <- dat[,c(2,4,10)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
+  mtext(nameGn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],
@@ -957,9 +957,9 @@ for (i in 1:9){
   
   dat <- dat[,c(1,3,9)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
+  mtext(nameDn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],
@@ -1059,9 +1059,9 @@ for (i in 1:9){
   
   dat <- dat[,c(1,3,10)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
+  mtext(nameDn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],
@@ -1160,9 +1160,9 @@ for (i in 1:9){
   
   dat <- dat[,c(2,4,11)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
+  mtext(nameGn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],
@@ -1261,9 +1261,9 @@ for (i in 1:9){
   
   dat <- dat[,c(2,4,9)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
-  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
-       cex.lab = 1.5)
+  plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = "", ylab = "")
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
+  mtext(nameGn, side = 1, line = 1.5, cex = 1, adj = 0.55)
   grid(lty = 2, lwd = 0.3, col = "white")
   ## Add dashed polygons
   polygon(x = HG_surv[HG_hull,2],

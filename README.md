@@ -38,7 +38,7 @@ The scripts used for the paper. These can be conceived as follows:
 Contains all the necessary custom functions and (most) necessary packages to run the rest of scripts
 
 `02*_data.R`
-These generated the simulated data and prepare and filter the observed data according to the criteria specified in the main manuscript.
+These generate the simulated data and prepare and filter the observed data according to the criteria specified in the main manuscript.
 
 `03*ABC_*.R`
 The scripts where the model is done. They retrieve the data from the structured folders and produced in the scripts above.
@@ -47,7 +47,7 @@ The scripts where the model is done. They retrieve the data from the structured 
 Calculations to explore the parameter space. **In order to reproduce figure 6, it is necessary to run this script first**, creating the appropriate data structure (or adapting the script paths to the user's preference).
 
 `05_Plots_Results.R`
-Produced the plots seen in the paper. It `sources` the functions and data from the previous scripts. It also contains some specific results such as the ratio computations.
+Produces the plots seen in the paper. It `sources` the functions and data from the previous scripts. It also contains some specific results such as the ratio computations.
 
 `Data_for_plots.R`
 Just data to use in the plots, so that people do not have to do the whole process.
@@ -60,13 +60,13 @@ In order to do this, the user must change the following, at the `03.1_ABC_Simula
 
 - Line 26: Reduce the number of simulations for the object `sim`. 
 - Lines 49-50: Either eliminate the loop to randomise the start or decrease strongly the number of iterations (perhaps `n_sim <- c(1:2)`?)
-- Line 141: Set the desired number of cores. Personal computer will not have 50 cores.
+- Line 141: Set the desired number of cores. Personal computers will very unlikely have 50 cores.
 - Line 207: Reduce the number of particles (perhaps `part_sim <- 500`?)
 - Line 217: Set one single stage with while `(n_theta <= 1)`
 
-This will only produce a ver small number of (non-usable) simulation, but this ensures that the code works and the user can then set higher values to send to a computer cluster. 
+This will only produce a ver small number of (non-usable) simulations, but this ensures that the code works and the user can then set higher values to send to a computer cluster. 
 
-If the user wants to try two or more particles, but still compute fast(ish), it will have to change the `line 203` and set a very high threshold. Too low unassessed thresholds might result in the stuck of the algorith, since in the parallelisation the model might never be able reach those values (hence using quantiles here).
+If the user wants to try two or more particles, but still run the code fast(ish), it will have to change the `line 203` and set a very high threshold. Too low unassessed thresholds might result in the stuck of the algorith, since in the parallelisation the model might never be able reach those values (hence using quantiles here).
 
 If the user wants to do the same operation with the scripts `03.1_ABC_Observed.R` the protocol is the same, although the numbers of the lines can vary slightly. 
 

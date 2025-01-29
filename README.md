@@ -2,6 +2,8 @@
 
 <!-- rmarkdown v1 -->
 
+Readme for the reproducibility of the paper "Demographic Interactions between the last hunter-gatherers and the first farmers", by A. Cortell-Nicolau, J. Rivas, E. R. Crema, S. Shennan, O. García-Puchol, J. Kolár, R. Staniuk and A. Timpson
+
 ## STRUCTURE
 
 The present repository contains the following four folders:

@@ -67,20 +67,82 @@ leg_vals <- c("0-200 y","200-400 y","400-600 y","600-800 y",
 png("./Figures/Fig_2.png", width = 42, height = 30, unit = "cm", res = 300)
 #tiff("./Figures/Fig_2.tiff", width = 1200, height = 850)
 
-
 par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
   
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Death_r_",ratio[i],"_e_",e[i],".rds"))
-  dat <- dat[,c(1,3,11)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
+
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
   
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(1,3)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(1,3)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(1,3)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(1,3)]
+  
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Dm,HG_surv$Dn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Dm,F_surv$Dn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Dm,Equilibrium$Dn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Dm,One_surv$Dn)
+  One_hull <- c(One_hull, One_hull[1])
+  
+  dat <- dat[,c(1,3,11)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
+  ## Plot the whole thing
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
-  contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
-          col = "black", add = TRUE)
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
+  
+  # Add the contour (top layer)
+  contour(dat[,2][1:100], dat[,1][seq(1, length(dat[,1]), 100)],
+          matrix(c(dat[,3]), nrow = 100, ncol = 100), col = "black", add = TRUE)
+
   #if (i ==3){
   #  legend(x = 0.036, y = 0.038, legend = rep("",8), pch = rep(15,8), 
   #         col = colors[seq(1,time,length.out=8)], bty = "n",  cex = 7, y.intersp = 0.15)
@@ -109,15 +171,75 @@ png("./Figures/Fig_3.png", width = 42, height = 30, unit = "cm", res = 300)
 
 par(mfrow = c(3,3), mar = c(5,4,4,8), mai = c(0.35,0.5,0.3,0), xpd = TRUE)
 for (i in 1:9){
-  
+
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Growth_r_",ratio[i],"_e_",e[i],".rds"))
+  
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
+  
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(2,4)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(2,4)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(2,4)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(2,4)]
+
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Gm,HG_surv$Gn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Gm,F_surv$Gn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Gm,Equilibrium$Gn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Gm,One_surv$Gn)
+  One_hull <- c(One_hull, One_hull[1])
+  
   dat <- dat[,c(2,4,10)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+  
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
   #if (i == 3) {
@@ -801,13 +923,74 @@ for (i in 1:9){
   
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Death_r_",ratio[i],"_e_",e[i],".rds"))
-  dat <- dat[,c(1,3,9)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   dat$time.to.overcome[which(dat$time.to.overcome == 1501)] <- 1500
+  
+  
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
+  
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(1,3)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(1,3)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(1,3)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(1,3)]
+  
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Dm,HG_surv$Dn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Dm,F_surv$Dn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Dm,Equilibrium$Dn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Dm,One_surv$Dn)
+  One_hull <- c(One_hull, One_hull[1])
+  
+  dat <- dat[,c(1,3,9)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+  
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
   #if (i == 3){
@@ -844,12 +1027,72 @@ for (i in 1:9){
   
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Death_r_",ratio[i],"_e_",e[i],".rds"))
+  
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
+  
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(1,3)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(1,3)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(1,3)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(1,3)]
+  
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Dm,HG_surv$Dn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Dm,F_surv$Dn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Dm,Equilibrium$Dn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Dm,One_surv$Dn)
+  One_hull <- c(One_hull, One_hull[1])
+  
   dat <- dat[,c(1,3,10)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameDn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameDm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+  
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
   #if (i == 3){
@@ -885,12 +1128,72 @@ for (i in 1:9){
   
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Growth_r_",ratio[i],"_e_",e[i],".rds"))
+  
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
+  
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(2,4)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(2,4)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(2,4)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(2,4)]
+  
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Gm,HG_surv$Gn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Gm,F_surv$Gn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Gm,Equilibrium$Gn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Gm,One_surv$Gn)
+  One_hull <- c(One_hull, One_hull[1])
+  
   dat <- dat[,c(2,4,11)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+  
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
   i#f (i == 3){
@@ -926,12 +1229,72 @@ for (i in 1:9){
   
   ## Load data
   dat <- readRDS(paste0("./Results/Sensitivity/Growth_r_",ratio[i],"_e_",e[i],".rds"))
+  
+  ## Prepare for analytical conditions
+  Dm_dat <- dat$Dm
+  Gm_dat <- dat$Gm
+  Gn_dat <- dat$Gn
+  Dn_dat <- dat$Dn
+  e_dat <- dat$e
+  Km_dat <- dat$Km
+  Kn_dat <- dat$Kn
+  
+  # Lambda values for conditions
+  Li <- Gm_dat-(Dm_dat*Kn_dat)
+  Lii <- Gn_dat-((Dn_dat-(e_dat*Dm_dat))*Km_dat)
+  
+  ## Establish parameters ranges for plots
+  HG_surv <- dat[which(Li > 0 & Lii < 0),c(2,4)]
+  F_surv <- dat[which(Li < 0 & Lii > 0),c(2,4)]
+  Equilibrium <- dat[which(Li > 0 & Lii > 0),c(2,4)]
+  One_surv <- dat[which(Li < 0 & Lii < 0),c(2,4)]
+  
+  ## Create convex hulls with outer points for outline polygon
+  HG_hull <- chull(HG_surv$Gm,HG_surv$Gn)
+  HG_hull <- c(HG_hull, HG_hull[1])
+  F_hull <- chull(F_surv$Gm,F_surv$Gn)
+  F_hull <- c(F_hull, F_hull[1])
+  Equilibrium_hull <- chull(Equilibrium$Gm,Equilibrium$Gn)
+  Equilibrium_hull <- c(Equilibrium_hull, Equilibrium_hull[1])
+  One_hull <- chull(One_surv$Gm,One_surv$Gn)
+  One_hull <- c(One_hull, One_hull[1])
+  
   dat <- dat[,c(2,4,9)] ## 9 for Time to surpass, 10 for Time to Extinction and 11 for time to peak f
   
   plot(dat[,2],dat[,1],col=colors[dat[,3]], pch = 15, cex = 2.5, bty = "n", xlab = nameGn, ylab = "",
        cex.lab = 1.5)
   title(ylab = nameGm, line = 2, cex.lab = 1.5)
   grid(lty = 2, lwd = 0.3, col = "white")
+  ## Add dashed polygons
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = adjustcolor("cyan3", alpha.f = 0.4), border = NA)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = adjustcolor("magenta3", alpha.f = 0.4), border = NA)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = adjustcolor("gold3", alpha.f = 0.4), border = NA)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = adjustcolor("lightblue3", alpha.f = 0.4), border = NA)
+  
+  # Overlay time to event
+  points(dat[which(dat[,3]<1500),2], dat[which(dat[,3]<1500),1], col = colors[dat[which(dat[,3]<1500),3]], pch = 15, cex = 2.5)
+  ## Add polygon squares
+  lw <- 1.5
+  polygon(x = HG_surv[HG_hull,2],
+          y = HG_surv[HG_hull,1],
+          col = NA, border = "cyan3", lwd = lw)
+  polygon(x = F_surv[F_hull,2],
+          y = F_surv[F_hull,1],
+          col = NA, border = "magenta3", lwd = lw)
+  polygon(x = Equilibrium[Equilibrium_hull,2],
+          y = Equilibrium[Equilibrium_hull,1],
+          col = NA, border = "gold3", lwd = lw)
+  polygon(x = One_surv[One_hull,2],
+          y = One_surv[One_hull,1],
+          col = NA, border = "lightblue3", lwd = lw)
   contour(dat[,2][1:100],dat[,1][seq(1,length(dat[,1]),100)],matrix(c(dat[,3]),nrow = 100, ncol = 100), 
           col = "black", add = TRUE)
   #if (i == 3){legend(x = 0.0645, y = 0.019, legend = rep("",8), pch = rep(15,8), 
